@@ -73,9 +73,22 @@ def clear_target(d):
 @app.post("/api/save-wheel")
 def save_wheel():
     d=request.get_json(silent=True) or {}
-    c=db(); cur=c.execute("INSERT INTO wheels(name,entries,settings) VALUES(?,?,?)",
-        (str(d.get("name","Untitled")),"\n".join(map(str,d.get("entries",[]))),str(d.get("settings",{}))))
+    wheel_id=d.get("id")
+    c=db()
+    entries="\n".join(map(str,d.get("entries",[])))
+    settings=str(d.get("settings",{}))
+    if wheel_id:
+        cur=c.execute("UPDATE wheels SET name=?, entries=?, settings=? WHERE id=?",(str(d.get("name","Untitled")),entries,settings,int(wheel_id)))
+        if cur.rowcount:
+            c.commit(); c.close(); return jsonify(ok=True,id=int(wheel_id),updated=True)
+    cur=c.execute("INSERT INTO wheels(name,entries,settings) VALUES(?,?,?)",(str(d.get("name","Untitled")),entries,settings))
     c.commit(); i=cur.lastrowid; c.close(); return jsonify(ok=True,id=i)
+
+@app.get("/api/wheel/<int:wheel_id>")
+def get_wheel(wheel_id):
+    c=db(); row=c.execute("SELECT * FROM wheels WHERE id=?",(wheel_id,)).fetchone(); c.close()
+    if not row: return jsonify(ok=False),404
+    return jsonify(ok=True,id=row["id"],name=row["name"],entries=row["entries"],settings=row["settings"])
 
 if __name__=="__main__":
     socketio.run(app,host="0.0.0.0",port=int(os.environ.get("PORT","5000")),allow_unsafe_werkzeug=True)
