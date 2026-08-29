@@ -24,6 +24,7 @@
     <button onclick="openSaved()" data-i18n="open">Open</button>
     <button onclick="shareWheel()" data-i18n="share">Share</button>
     <button onclick="toggleCustomize()" data-i18n="customize">Customize</button>
+    <div class="moreMenu"><button onclick="toggleMore()" data-i18n="more">More ▾</button><div id="moreDropdown" class="moreDropdown"><button onclick="showInfo('feedback');toggleMore(false)" data-i18n="feedback">Feedback</button><button onclick="showInfo('faq');toggleMore(false)" data-i18n="faq">FAQ</button><button onclick="showInfo('account');toggleMore(false)" data-i18n="myAccount">My Account</button><button onclick="showInfo('preferences');toggleMore(false)" data-i18n="preferences">Preferences</button><button onclick="showInfo('import');toggleMore(false)" data-i18n="importSheets">Import Google Sheets</button></div></div>
     <label class="languageSelect">
       <span class="srOnly">Language</span>
       <select id="language" onchange="setLanguage(this.value)" aria-label="Language">
@@ -41,8 +42,8 @@
 
 <main class="layout">
 <section class="wheelPanel">
-  <div class="pointer">▼</div>
   <div class="wheelWrap">
+    <div class="pointer" aria-label="Wheel pointer"><span></span></div>
     <canvas id="wheel" width="760" height="760"></canvas>
     <div id="centerText" data-i18n="clickSpin">CLICK TO SPIN</div>
   </div>
@@ -51,6 +52,7 @@
     <button class="iconBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
   </div>
   <div id="winner"></div>
+  <div class="wheel-hint" data-i18n="wheelHint">Click to spin • Ctrl + Enter to spin</div>
 </section>
 
 <aside class="editor">
@@ -105,6 +107,19 @@
   </div>
 </aside>
 </main>
+
+<section class="infoContent">
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="whatForTitle">What is the wheel spinner for?</span></h2><p data-i18n="whatForIntro">People use a wheel for classrooms, giveaways, presentations, meetings, task selection, games, and everyday choices.</p><ul><li data-i18n="use1">Pick a student to answer a question.</li><li data-i18n="use2">Choose a customer for a giveaway.</li><li data-i18n="use3">Select a lucky attendee during a presentation.</li><li data-i18n="use4">Randomize who speaks first in a meeting.</li><li data-i18n="use5">Choose which task to start with.</li><li data-i18n="use6">Pick who goes first in a game.</li><li data-i18n="use7">Let the wheel decide between alternatives.</li></ul></article>
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="howTitle">How to use the wheel spinner</span></h2><p data-i18n="howText">Type your entries in the panel, then click the wheel or press Ctrl + Enter. Use Customize to change colours, sounds, graphics, and spin time.</p></article>
+  <article class="infoBlock stats"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="activityTitle">Activity</span></h2><div><b>0</b><span data-i18n="wheelSpins">Wheel spins</span></div><div><b>0</b><span data-i18n="hoursSpinning">Hours of spinning</span></div></article>
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="featuresTitle">Wheel features</span></h2><p data-i18n="featuresIntro">The goal is a flexible, easy-to-use wheel with useful tools for games, classrooms, events, and work.</p><ul><li data-i18n="feature1"><b>Audio:</b> sound and music controls.</li><li data-i18n="feature2"><b>Multiple wheels:</b> organize different wheel sessions.</li><li data-i18n="feature3"><b>Weighted entries:</b> optionally make some outcomes more likely.</li><li data-i18n="feature4"><b>Sharing:</b> create a link for your wheel.</li><li data-i18n="feature5"><b>Visuals:</b> customize colours, backgrounds, and the center.</li><li data-i18n="feature6"><b>Large lists:</b> work with many entries.</li><li data-i18n="feature7"><b>Localization:</b> choose from supported languages.</li></ul></article>
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="privacyTitle">Is my data private?</span></h2><p data-i18n="privacyText">Your saved local wheel settings stay on your device unless you choose to share or use a connected service. Avoid entering sensitive information into a public wheel.</p></article>
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="streamTitle">Can I use the wheel in OBS or Streamlabs?</span></h2><p data-i18n="streamText">Yes. You can use the public wheel as a browser source in streaming software. Keep the owner controls private.</p></article>
+  <article class="infoBlock"><h2><img src="https://wheelofnames.com/icons/favicon-32x32.png" alt=""> <span data-i18n="randomTitle">Is the wheel truly random?</span></h2><p data-i18n="randomText">Normal spins use browser cryptographic randomness. When the private owner control sets a target, the next spin intentionally lands on that selected entry.</p></article>
+  <footer class="siteFooter"><span>© SpinWheel</span><button onclick="showInfo('terms')" data-i18n="terms">Terms & conditions</button><button onclick="showInfo('privacy')" data-i18n="privacy">Privacy policy</button><button onclick="showInfo('faq')" data-i18n="faq">FAQ</button><button onclick="showInfo('api')" data-i18n="api">API</button><button onclick="showInfo('streaming')" data-i18n="streaming">Streaming</button></footer>
+</section>
+
+<div id="infoModal" class="modal hidden"><div class="modalCard infoModal"><button class="closeModal" onclick="closeInfo()">×</button><h2 id="infoTitle"></h2><p id="infoText"></p></div></div>
 
 <div id="winnerModal" class="modal hidden">
   <div class="modalCard">
