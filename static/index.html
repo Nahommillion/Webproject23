@@ -1,24 +1,121 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SpinWheel</title><link rel="stylesheet" href="/static/style.css"></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpinWheel</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
 <body>
-<header><div class="brand">🎡 SpinWheel</div><nav>
-<button onclick="newGame()">New Game</button><button onclick="saveGame()">Save</button><button onclick="openSaved()">Open</button><button onclick="shareWheel()">Share</button><button onclick="toggleCustomize()">Customize</button><button onclick="toggleLanguage()">አማ / EN</button>
-</nav></header>
+<div id="bgGraphic" class="bgGraphic"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logoMark" aria-hidden="true">↻</div>
+    <div>
+      <div class="brandName">SpinWheel</div>
+      <div class="brandTag" data-i18n="tagline">Random Name Picker</div>
+    </div>
+  </div>
+
+  <nav class="topActions">
+    <button onclick="newGame()" data-i18n="newGame">New Game</button>
+    <button onclick="saveGame()" data-i18n="save">Save</button>
+    <button onclick="openSaved()" data-i18n="open">Open</button>
+    <button onclick="shareWheel()" data-i18n="share">Share</button>
+    <button onclick="toggleCustomize()" data-i18n="customize">Customize</button>
+    <label class="languageSelect">
+      <span class="srOnly">Language</span>
+      <select id="language" onchange="setLanguage(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="am">አማርኛ</option>
+        <option value="om">Afaan Oromoo</option>
+        <option value="ti">ትግርኛ</option>
+        <option value="wal">Wolaytta</option>
+        <option value="so">Soomaali</option>
+        <option value="sid">Sidama</option>
+      </select>
+    </label>
+  </nav>
+</header>
+
 <main class="layout">
-<section class="wheelPanel"><div class="pointer">▼</div>
-<div class="wheelWrap"><canvas id="wheel" width="760" height="760"></canvas><div id="centerText">CLICK TO SPIN</div></div>
-<div class="under"><button class="bigSpin" onclick="spin()">SPIN</button><button onclick="toggleFullscreen()">⛶</button></div>
-<div id="winner"></div></section>
-<aside class="editor"><h2 id="entriesTitle">Entries</h2>
-<textarea id="entryInput"></textarea>
-<div class="toolbar"><button onclick="addEntry()">＋ Add</button><button onclick="renameSelected()">Rename</button><button onclick="shuffleEntries()">Shuffle</button><button onclick="sortEntries()">Sort</button></div>
-<div id="entryList"></div><button class="remove" onclick="removeWinner()">Remove winner</button>
-<div id="customize" class="customize hidden"><h3>Customize</h3>
-<label>Spin time <span id="durationLabel">6</span>s</label><input id="duration" type="range" min="1" max="30" value="6">
-<label>Sound <input id="sound" type="checkbox" checked></label><label>Confetti <input id="confetti" type="checkbox" checked></label>
-<label>Background <input id="bg" type="color" value="#f5f7fb"></label><button onclick="applyBackground()">Apply</button></div>
-</aside></main>
-<div id="winnerModal" class="modal hidden"><div class="modalCard"><div class="trophy">🏆</div><h2 id="modalWinner"></h2><p>Winner!</p><button onclick="closeWinner()">OK</button></div></div>
-<script src="/static/app.js"></script></body></html>
+<section class="wheelPanel">
+  <div class="pointer">▼</div>
+  <div class="wheelWrap">
+    <canvas id="wheel" width="760" height="760"></canvas>
+    <div id="centerText" data-i18n="clickSpin">CLICK TO SPIN</div>
+  </div>
+  <div class="under">
+    <button class="bigSpin" onclick="spin()" data-i18n="spin">SPIN</button>
+    <button class="iconBtn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+  </div>
+  <div id="winner"></div>
+</section>
+
+<aside class="editor">
+  <div class="panelHeading">
+    <div>
+      <h2 data-i18n="entries">Entries</h2>
+      <p data-i18n="entriesHint">Add names or numbers, one per line.</p>
+    </div>
+    <span class="count" id="entryCount">0</span>
+  </div>
+
+  <textarea id="entryInput" aria-label="Entries"></textarea>
+
+  <div class="toolbar">
+    <button onclick="addEntry()" data-i18n="add">＋ Add</button>
+    <button onclick="renameSelected()" data-i18n="rename">Rename</button>
+    <button onclick="shuffleEntries()" data-i18n="shuffle">Shuffle</button>
+    <button onclick="sortEntries()" data-i18n="sort">Sort</button>
+  </div>
+
+  <div id="entryList"></div>
+  <button class="remove" onclick="removeWinner()" data-i18n="removeWinner">Remove winner</button>
+
+  <div id="customize" class="customize hidden">
+    <h3 data-i18n="appearance">Appearance</h3>
+
+    <label data-i18n="themeColor">Theme colour</label>
+    <input id="themeColor" type="color" value="#6c63ff" class="colorInput">
+
+    <label data-i18n="backgroundColor">Background colour</label>
+    <input id="bgColor" type="color" value="#f5f7fb" class="colorInput">
+
+    <label data-i18n="backgroundStyle">Background style</label>
+    <select id="bgStyle">
+      <option value="solid" data-i18n="solid">Solid</option>
+      <option value="gradient" data-i18n="gradient">Gradient</option>
+      <option value="pattern" data-i18n="pattern">Pattern</option>
+      <option value="dots" data-i18n="dots">Dots</option>
+    </select>
+
+    <label class="checkRow"><input id="graphics" type="checkbox" checked> <span data-i18n="graphics">Background graphics</span></label>
+    <label class="checkRow"><input id="sound" type="checkbox" checked> <span data-i18n="sound">Sound</span></label>
+    <label class="checkRow"><input id="confetti" type="checkbox" checked> <span data-i18n="confetti">Confetti</span></label>
+
+    <label data-i18n="spinTime">Spin time</label>
+    <div class="rangeRow">
+      <input id="duration" type="range" min="1" max="30" value="6">
+      <b><span id="durationLabel">6</span>s</b>
+    </div>
+
+    <button class="applyTheme" onclick="applyTheme()" data-i18n="apply">Apply</button>
+  </div>
+</aside>
+</main>
+
+<div id="winnerModal" class="modal hidden">
+  <div class="modalCard">
+    <div class="trophy">🏆</div>
+    <h2 id="modalWinner"></h2>
+    <p data-i18n="winner">Winner!</p>
+    <button onclick="closeWinner()" data-i18n="ok">OK</button>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
