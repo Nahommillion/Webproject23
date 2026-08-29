@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpinWheel</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><div class="brand">🎡 SpinWheel</div><nav>
+<button onclick="newGame()">New Game</button><button onclick="saveGame()">Save</button><button onclick="openSaved()">Open</button><button onclick="shareWheel()">Share</button><button onclick="toggleCustomize()">Customize</button><button onclick="toggleLanguage()">አማ / EN</button>
+</nav></header>
+<main class="layout">
+<section class="wheelPanel"><div class="pointer">▼</div>
+<div class="wheelWrap"><canvas id="wheel" width="760" height="760"></canvas><div id="centerText">CLICK TO SPIN</div></div>
+<div class="under"><button class="bigSpin" onclick="spin()">SPIN</button><button onclick="toggleFullscreen()">⛶</button></div>
+<div id="winner"></div></section>
+<aside class="editor"><h2 id="entriesTitle">Entries</h2>
+<textarea id="entryInput"></textarea>
+<div class="toolbar"><button onclick="addEntry()">＋ Add</button><button onclick="renameSelected()">Rename</button><button onclick="shuffleEntries()">Shuffle</button><button onclick="sortEntries()">Sort</button></div>
+<div id="entryList"></div><button class="remove" onclick="removeWinner()">Remove winner</button>
+<div id="customize" class="customize hidden"><h3>Customize</h3>
+<label>Spin time <span id="durationLabel">6</span>s</label><input id="duration" type="range" min="1" max="30" value="6">
+<label>Sound <input id="sound" type="checkbox" checked></label><label>Confetti <input id="confetti" type="checkbox" checked></label>
+<label>Background <input id="bg" type="color" value="#f5f7fb"></label><button onclick="applyBackground()">Apply</button></div>
+</aside></main>
+<div id="winnerModal" class="modal hidden"><div class="modalCard"><div class="trophy">🏆</div><h2 id="modalWinner"></h2><p>Winner!</p><button onclick="closeWinner()">OK</button></div></div>
+<script src="/static/app.js"></script></body></html>

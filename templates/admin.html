@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Owner Admin</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><header><div class="brand">👑 Owner Admin</div><nav><button onclick="location='/'">Public Wheel</button><button onclick="logout()">Logout</button></nav></header>
+<main style="padding:22px;max-width:1100px;margin:auto"><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+<section style="background:#fff;padding:20px;border-radius:16px"><h2>📱 Private Owner Control</h2><p>Nothing in this panel is shown on the public wheel.</p><button onclick="refreshRooms()">Refresh active wheels</button><div id="rooms" style="margin-top:12px"></div><div id="controlBox" style="display:none"><hr><p>Selected public session: <b id="selectedRoom"></b></p><button onclick="createControl()">Create private phone link</button><p id="link"></p><input id="target" placeholder="Target winner, e.g. 5" style="width:100%;padding:12px"><button onclick="sendTarget()" style="margin-top:8px;width:100%;background:#e53935;color:white;padding:13px">MAKE TARGET WIN</button><button onclick="clearTarget()" style="margin-top:8px;width:100%">Clear Target</button><p id="status"></p></div></section>
+<section style="background:#fff;padding:20px;border-radius:16px"><h2>📊 Dashboard</h2><div id="stats"></div><h3>Recent controls</h3><div id="events"></div></section></div></main>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script><script>
+let selectedRoom="",token="",sock=null;
+async function api(u,o){let r=await fetch(u,o);if(r.status===401){location='/admin-login';return {}}return r.json()}
+async function refreshRooms(){let d=await api('/api/admin/rooms');rooms.innerHTML=d.length?d.map(x=>`<button onclick="selectRoom('${x.room}')">🎡 Wheel ${x.room}</button>`).join(' '):'No active public wheels. Open the public wheel in another tab first.'}
+function selectRoom(r){selectedRoom=r;selectedRoomEl.textContent=r;controlBox.style.display='block'}
+const selectedRoomEl=document.getElementById('selectedRoom');
+async function createControl(){let d=await api('/api/admin/create-control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:selectedRoom})});if(!d.token){link.textContent=d.error;return}token=d.token;link.innerHTML=`Private phone link: <a href="${d.control_url}" target="_blank">Open Control</a><br><small>Send/copy this link only to your own phone.</small>`;connect()}
+function connect(){if(sock)sock.disconnect();sock=io();sock.on('connect',()=>sock.emit('owner_join',{room:selectedRoom,token}));sock.on('owner_ready',()=>status.textContent='Private control connected.')}
+function sendTarget(){if(!sock)return alert('Create the private phone link first.');let t=target.value.trim();if(!t)return alert('Enter a target.');sock.emit('force_winner',{room:selectedRoom,token,target:t});status.textContent='Target set: '+t}
+function clearTarget(){if(sock)sock.emit('clear_target',{room:selectedRoom,token});status.textContent='Target cleared.'}
+async function logout(){await api('/api/logout',{method:'POST'});location='/admin-login'}
+async function load(){let s=await api('/api/admin/stats');stats.innerHTML=`Saved wheels: <b>${s.wheels}</b><br>Owner-controlled results: <b>${s.events}</b><br>Active public wheels: <b>${s.active_rooms}</b>`;let e=await api('/api/admin/events');events.innerHTML=e.map(x=>`<div style="padding:7px;border-bottom:1px solid #eee">${x.created_at} — <b>${x.target}</b> — ${x.room}</div>`).join('')||'None yet.';refreshRooms()}load()
+</script></body></html>

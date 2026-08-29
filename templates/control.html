@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Private Owner Control</title><style>body{font-family:Arial;background:#111827;color:#fff;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{width:min(92vw,480px);background:#1f2937;padding:28px;border-radius:20px;box-shadow:0 20px 70px #0008}input,button{width:100%;padding:15px;margin:7px 0;border-radius:10px;border:0;font-size:17px}button{font-weight:800;cursor:pointer}.win{background:#ef4444;color:white}.ok{background:#10b981;color:white}.muted{color:#9ca3af;font-size:13px}</style></head>
+<body><div class="card"><h1>👑 Private Owner Control</h1><p class="muted">This page is for the owner phone only.</p><p>Room: <b id="room"></b></p><input id="target" placeholder="Enter winner, e.g. 5"><button class="win" onclick="send()">MAKE TARGET WIN</button><button class="ok" onclick="clearT()">CLEAR TARGET</button><p id="status">Connecting…</p></div>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script><script>
+const q=new URLSearchParams(location.search),room=q.get('room'),token=q.get('token');document.getElementById('room').textContent=room||'Invalid';
+const s=io();s.on('connect',()=>s.emit('owner_join',{room,token}));s.on('owner_ready',()=>status.textContent='Connected to the public wheel.');s.on('control_error',d=>status.textContent=d.message);
+function send(){let t=target.value.trim();if(!t)return alert('Enter a target.');s.emit('force_winner',{room,token,target:t});status.textContent='Target sent: '+t}
+function clearT(){s.emit('clear_target',{room,token});status.textContent='Target cleared.'}
+</script></body></html>
