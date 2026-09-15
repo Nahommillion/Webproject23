@@ -40,15 +40,19 @@ async function spin(){
  const dur=Math.max(1000,+$('duration').value*1000);
  // Keep the wheel visually fast even when the configured duration is long.
  // The extra turns scale with time so a 60-second spin does not crawl.
- const turns=Math.max(8,Math.round((dur/1000)*1.65));
+ // One consistent, wheel-like motion profile for every selected spin time:
+ // quick launch -> sustained spin -> smooth progressive braking -> gentle stop.
+ // The number of turns scales with time so 2s, 10s and 60s all feel like the same wheel.
+ const turns=Math.max(6,Math.round((dur/1000)*1.45));
  const end=start+turns*TAU+delta,t0=performance.now();
  startSpinRumble();
  document.querySelectorAll('.floatingSpin,.fsSpin').forEach(b=>b.classList.add('spin-rumble'));
  let lastSeg=Math.floor(normalize(rotation-POINTER_ANGLE)/(TAU/Math.max(entries.length,1)));
  function frame(now){
    const p=Math.min(1,(now-t0)/dur);
-   // Mostly constant speed, with a professional deceleration only near the end.
-   const q=p<0.88 ? p/0.88*0.88 : 0.88+(1-Math.pow(1-(p-0.88)/0.12,3))*0.12;
+   // Ease-out cubic: fast at the beginning, then continuously loses speed until zero.
+   // No abrupt velocity change at the end.
+   const q=1-Math.pow(1-p,3);
    rotation=start+(end-start)*q;
    const seg=Math.floor(normalize(rotation-POINTER_ANGLE)/(TAU/Math.max(entries.length,1)));
    if(seg!==lastSeg){lastSeg=seg;spinTick();}
@@ -60,9 +64,22 @@ async function spin(){
 function finishSpin(idx,dur){lastWinner=entries[idx];stats.spins++;stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner;$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti()}
 function updateStats(){const h=(stats.seconds/3600).toFixed(2),lw=lastWinner||results[0]?.name||'—';$('spinCount').textContent=stats.spins.toLocaleString();$('hoursCount').textContent=h;$('activitySpins').textContent=stats.spins.toLocaleString();$('activityHours').textContent=h;$('lastResult').textContent=lw;if($('fsSpinCount'))$('fsSpinCount').textContent=stats.spins.toLocaleString();if($('fsHoursCount'))$('fsHoursCount').textContent=h;if($('fsLastResult'))$('fsLastResult').textContent=lw}
 function ensureAudio(){if(spinAudio)return spinAudio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;spinAudio=new AC();return spinAudio}
-function startSpinRumble(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();if(spinNoise)return;const o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.setValueAtTime(58,a.currentTime);g.gain.setValueAtTime(.018,a.currentTime);o.connect(g);g.connect(a.destination);o.start();spinNoise=o;spinGain=g}catch(e){}}
-function stopSpinRumble(){try{if(spinNoise&&spinAudio){spinGain.gain.exponentialRampToValueAtTime(.0001,spinAudio.currentTime+.08);spinNoise.stop(spinAudio.currentTime+.09)}}catch(e){}spinNoise=null;spinGain=null}
-function spinTick(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();const o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=95+Math.random()*35;g.gain.setValueAtTime(.0001,a.currentTime);g.gain.exponentialRampToValueAtTime(.035,a.currentTime+.004);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.035);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.04)}catch(e){}}
+function startSpinRumble(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();if(spinNoise)return;
+  // Low mechanical wheel rumble: filtered noise + a quiet rotating hum.
+  const buffer=a.createBuffer(1,a.sampleRate*2,a.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*0.55;
+  const src=a.createBufferSource(),filter=a.createBiquadFilter(),g=a.createGain();
+  src.buffer=buffer;src.loop=true;filter.type='lowpass';filter.frequency.value=430;filter.Q.value=.7;
+  g.gain.setValueAtTime(.0001,a.currentTime);g.gain.exponentialRampToValueAtTime(.035,a.currentTime+.18);
+  src.connect(filter);filter.connect(g);g.connect(a.destination);src.start();spinNoise=src;spinGain=g;
+ }catch(e){}}
+function stopSpinRumble(){try{if(spinNoise&&spinAudio){const now=spinAudio.currentTime;spinGain.gain.cancelScheduledValues(now);spinGain.gain.setValueAtTime(Math.max(spinGain.gain.value,.0001),now);spinGain.gain.exponentialRampToValueAtTime(.0001,now+.18);spinNoise.stop(now+.2)}}catch(e){}spinNoise=null;spinGain=null}
+function spinTick(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();const now=a.currentTime;
+  // Short spring/click like a real physical prize wheel passing a peg.
+  const o=a.createOscillator(),g=a.createGain();o.type='triangle';o.frequency.setValueAtTime(210+Math.random()*55,now);o.frequency.exponentialRampToValueAtTime(105,now+.055);
+  g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.075,now+.003);g.gain.exponentialRampToValueAtTime(.0001,now+.075);o.connect(g);g.connect(a.destination);o.start(now);o.stop(now+.08);
+  const c=a.createOscillator(),cg=a.createGain();c.type='square';c.frequency.value=1450;cg.gain.setValueAtTime(.0001,now);cg.gain.exponentialRampToValueAtTime(.025,now+.002);cg.gain.exponentialRampToValueAtTime(.0001,now+.018);c.connect(cg);cg.connect(a.destination);c.start(now);c.stop(now+.02);
+ }catch(e){}}
 function sound(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();const notes=[523,659,784,1047];notes.forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,a.currentTime+i*.11);g.gain.exponentialRampToValueAtTime(.08,a.currentTime+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+i*.11+.18);o.connect(g);g.connect(a.destination);o.start(a.currentTime+i*.11);o.stop(a.currentTime+i*.11+.2)})}catch(e){}}
 function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 const amUnits=['ዜሮ','አንድ','ሁለት','ሶስት','አራት','አምስት','ስድስት','ሰባት','ስምንት','ዘጠኝ','አስር','አስራ አንድ','አስራ ሁለት','አስራ ሶስት','አስራ አራት','አስራ አምስት','አስራ ስድስት','አስራ ሰባት','አስራ ስምንት','አስራ ዘጠኝ'];
