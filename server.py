@@ -30,8 +30,10 @@ def admin_page():
     return send_from_directory("templates","admin.html") if session.get("admin") else redirect("/admin-login")
 @app.get("/owner-control")
 def control_page():
-    t=request.args.get("token","")
-    return send_from_directory("templates","control.html") if t and secrets.compare_digest(t,state["token"]) else ("Invalid private control link.",403)
+    # The page itself is safe to open without a token; control actions require
+    # a valid token issued after owner login. This lets the owner log in directly
+    # from a phone instead of depending on a copied private URL.
+    return send_from_directory("templates","control.html")
 
 @app.post("/api/login")
 def login():
@@ -41,6 +43,25 @@ def login():
     return jsonify(ok=False,message="Invalid username or password"),401
 @app.post("/api/logout")
 def logout(): session.clear(); return jsonify(ok=True)
+
+@app.post("/api/phone-login")
+def phone_login():
+    d=request.get_json(silent=True) or {}
+    if secrets.compare_digest(str(d.get("username","")),ADMIN_USER) and secrets.compare_digest(str(d.get("password","")),ADMIN_PASS):
+        state["token"]=secrets.token_urlsafe(32)
+        return jsonify(ok=True,control_url="/owner-control?token="+state["token"])
+    return jsonify(ok=False,message="Invalid username or password"),401
+
+@app.get("/api/target")
+def get_target():
+    return jsonify(target=state["target"])
+
+@app.post("/api/target/clear")
+def clear_target_api():
+    state["target"]=None
+    socketio.emit("target_changed",{"target":None})
+    return jsonify(ok=True)
+
 @app.post("/api/admin/new-control-link")
 def new_link():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401

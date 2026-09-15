@@ -30,3 +30,12 @@ Render environment variables:
 
 Important:
 The translated text for Ethiopian languages is intended for the basic website UI. For production/public release, native speakers should review terminology, especially Wolaytta and Sidama UI wording.
+
+## V8 fixes
+- Phone owner control can be opened directly and logged into from a phone.
+- Public spins fetch the authoritative owner target before choosing a winner.
+- Owner target matching supports exact text and numeric equivalence (for example 5 and 05).
+- A missing owner target no longer silently falls back to a random winner.
+- Winner rotation is calculated to put the winning segment midpoint exactly under the fixed pointer.
+- Amharic winner announcements use an Amharic browser voice when available, with an Amharic Google TTS fallback.
+- The Amharic announcement no longer overlaps the English-style fanfare.
