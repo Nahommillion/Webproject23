@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<defs><radialGradient id="g" cx="50%" cy="35%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#72d7ff"/></radialGradient></defs>
+<circle cx="64" cy="64" r="59" fill="#0b1020" stroke="#69d8ff" stroke-width="5"/>
+<g stroke="#fff" stroke-width="2">
+<path d="M64 64 L64 8 A56 56 0 0 1 112.5 36 Z" fill="#ff3b7a"/>
+<path d="M64 64 L112.5 36 A56 56 0 0 1 120 84 Z" fill="#ffb31a"/>
+<path d="M64 64 L120 84 A56 56 0 0 1 83 116 Z" fill="#45e36a"/>
+<path d="M64 64 L83 116 A56 56 0 0 1 27 107 Z" fill="#22b8ff"/>
+<path d="M64 64 L27 107 A56 56 0 0 1 8 64 Z" fill="#8d5cff"/>
+<path d="M64 64 L8 64 A56 56 0 0 1 19 25 Z" fill="#ff4b3e"/>
+<path d="M64 64 L19 25 A56 56 0 0 1 64 8 Z" fill="#f8dc29"/>
+</g><circle cx="64" cy="64" r="18" fill="url(#g)" stroke="#fff" stroke-width="4"/><path d="M64 2 L55 19 H73 Z" fill="#fff"/><path d="M64 5 L59 16 H69 Z" fill="#ff335f"/>
+<text x="64" y="69" text-anchor="middle" font-family="Arial" font-size="14" font-weight="900" fill="#111a33">SW</text></svg>

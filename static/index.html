@@ -26,14 +26,8 @@
  </nav>
 </header>
 <main class="dashboard">
- <section class="leftGallery glass">
-  <div class="panelTitle"><h2>🎨 <span data-i18n="gallery">Gallery</span></h2></div>
-  <div class="search"><input id="gallerySearchMain" placeholder="Search templates, wheels..." oninput="renderMainGallery(this.value)"> 🔍</div>
-  <div class="chips" id="mainCats"></div><div class="miniGallery" id="mainGallery"></div>
-  <div class="galleryNote">💡 <span data-i18n="galleryNote">You can add your own wheels to this gallery by clicking “Share” on the main page.</span></div>
- </section>
- <section class="centerStage">
-  <div class="stageHeader"><span><i class="live"></i> <span data-i18n="wheelReady">Wheel ready</span></span><kbd>Ctrl + Enter</kbd></div>
+<section class="centerStage">
+  <div class="stageHeader"><span><i class="live"></i> <span data-i18n="wheelReady">Wheel ready</span></span><div class="stageTools"><kbd>Ctrl + Enter</kbd><button class="fullBtn" onclick="openFullscreenGame()">⛶ Full Screen</button></div></div>
   <div class="wheelArea">
    <div class="wheelDecor"><span class="ringBubble rb1"></span><span class="ringBubble rb2"></span><span class="ringBubble rb3"></span><span class="ringStar rs1">✦</span><span class="ringStar rs2">✧</span><span class="ringStar rs3">◇</span></div>
    <div class="pointer"><span></span></div>
@@ -43,7 +37,16 @@
   <div id="winner" class="winnerBanner"></div>
   <div class="quickStats"><div><strong id="spinCount">0</strong><span data-i18n="wheelSpins">Wheel spins</span></div><div><strong id="hoursCount">0.00</strong><span data-i18n="hoursSpinning">Hours of spinning</span></div><div><strong id="lastResult">—</strong><span data-i18n="lastWinner">Last winner</span></div></div>
  </section>
- <aside class="rightPanel glass">
+ 
+</main>
+<section class="belowPanels">
+  <section class="leftGallery glass">
+  <div class="panelTitle"><h2>🎨 <span data-i18n="gallery">Gallery</span></h2></div>
+  <div class="search"><input id="gallerySearchMain" placeholder="Search templates, wheels..." oninput="renderMainGallery(this.value)"> 🔍</div>
+  <div class="chips" id="mainCats"></div><div class="miniGallery" id="mainGallery"></div>
+  <div class="galleryNote">💡 <span data-i18n="galleryNote">You can add your own wheels to this gallery by clicking “Share” on the main page.</span></div>
+ </section>
+  <aside class="rightPanel glass">
   <div class="sideTabs"><button class="active" onclick="showSideTab('list',this)" data-i18n="entries">Entries</button><button onclick="showSideTab('results',this)" data-i18n="results">Results</button><button onclick="showSideTab('stats',this)" data-i18n="stats">Stats</button></div>
   <div class="sideHeading"><h2 data-i18n="entries">Entries</h2><span id="entryCount" class="count">0</span></div>
   <textarea id="entryInput" aria-label="Entries"></textarea>
@@ -52,7 +55,8 @@
   <button class="remove" onclick="removeWinner()">🗑 <span data-i18n="removeWinner">Remove winner</span></button>
   <div id="customize" class="customize hidden"><h3 data-i18n="appearance">Appearance</h3><label data-i18n="themeColor">Theme colour</label><input id="themeColor" type="color" value="#7c5cff"><label data-i18n="backgroundColor">Background colour</label><input id="bgColor" type="color" value="#06183d"><label data-i18n="backgroundStyle">Background style</label><select id="bgStyle"><option value="solid">Solid</option><option value="gradient">Gradient</option><option value="pattern">Pattern</option><option value="dots">Dots</option></select><label class="check"><input id="graphics" type="checkbox" checked> <span data-i18n="graphics">Animated graphics</span></label><label class="check"><input id="sound" type="checkbox" checked> <span data-i18n="sound">Sound</span></label><label class="check"><input id="confetti" type="checkbox" checked> <span data-i18n="confetti">Confetti</span></label><label data-i18n="spinTime">Spin time</label><div class="range"><input id="duration" type="range" min="1" max="60" value="6"><b><span id="durationLabel">6</span>s</b></div><button class="apply" onclick="applyTheme()" data-i18n="apply">Apply</button></div>
  </aside>
-</main>
+</section>
+
 <section class="openSaveBar"><div class="glass actionCard"><button onclick="openCloud()">📂 <span data-i18n="open">Open</span></button><small>☁️ From cloud</small><small>📄 Local file</small></div><div class="glass actionCard"><button onclick="saveShared()">💾 <span data-i18n="save">Save</span></button><small>🔄 Update your shared wheel</small><small>🔒 Save as private wheel</small></div><div class="glass shareCard"><div><h3>🔗 Share</h3><b>Visibility</b><p>If you continue, you will create a public link to your current wheel, including its names, colours and settings.</p><input id="sharePreview" readonly placeholder="Public link appears here"><div><button onclick="closeModal()" class="secondary">Cancel</button><button onclick="shareWheel()" class="primary">Continue</button></div></div></div></section>
 <section class="infoGrid">
  <article><h3>🎡 What is the wheel spinner for?</h3><p>Use SpinWheel for random choices in classrooms, giveaways, presentations, meetings, games and everyday decisions.</p><ul><li>Pick a student to answer.</li><li>Choose a giveaway winner.</li><li>Randomize meeting order.</li><li>Choose a task or game turn.</li><li>Decide between alternatives.</li></ul></article>
@@ -63,7 +67,16 @@
  <article><h3>📺 OBS / Streaming</h3><p>Use the public wheel as a browser source while keeping the private owner control URL hidden.</p><button class="learn" onclick="showInfo('streaming')">Streaming panel →</button></article>
  <article><h3>🔐 Randomness</h3><p>Normal spins use cryptographic browser randomness. An owner target intentionally controls the next winner.</p><button class="learn" onclick="showInfo('random')">Learn how →</button></article>
 </section>
-<footer class="siteFooter"><div class="footerBrand"><img src="/static/spinwheel-logo.svg"><b>SpinWheel</b></div><span>© 2026 SpinWheel</span><button onclick="showInfo('terms')">Terms & conditions</button><button onclick="showInfo('privacy')">Privacy policy</button><button onclick="showInfo('faq')">FAQ</button><button onclick="showInfo('api')">API</button><button onclick="showInfo('streaming')">Streaming</button><span>Made with ❤️ in Ethiopia 🇪🇹</span></footer>
+<footer class="siteFooter"><div class="footerBrand"><img src="/static/spinwheel-logo.svg"><b>SpinWheel</b></div><span>© 2026 SpinWheel</span><button onclick="showInfo('terms')">Terms & conditions</button><button onclick="showInfo('privacy')">Privacy policy</button><button onclick="showInfo('faq')">FAQ</button><button onclick="showInfo('api')">API</button><button onclick="showInfo('streaming')">Streaming</button></footer>
+<div id="fullscreenGame" class="fullscreenGame hidden">
+  <div class="fullscreenTop"><div class="fsBrand"><img src="/static/spinwheel-logo.svg"><b>SpinWheel</b></div><button onclick="closeFullscreenGame()">✕ Exit Full Screen</button></div>
+  <div class="fullscreenStage">
+    <div class="fsDecor" aria-hidden="true"><span>✦</span><span>◇</span><span>○</span><span>✧</span></div>
+    <div class="fsWheelWrap"><div class="fsPointer"></div><div class="fsWheelOuter"><canvas id="fullscreenWheel" width="900" height="900"></canvas><div class="fsCenterSpin"><strong>↻</strong><span>CLICK TO SPIN</span><small>Ctrl + Enter</small></div></div></div>
+    <div id="fullscreenWinner" class="fullscreenWinner">Ready to spin</div>
+    <button class="fsSpin" onclick="spin()">↻ <b>SPIN</b></button>
+  </div>
+</div>
 <div id="modal" class="modal hidden"><div class="modalCard"><button class="x" onclick="closeModal()">×</button><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="modalActions" class="modalActions"></div></div></div>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script><script src="/static/app.js"></script>
 </body></html>
