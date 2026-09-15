@@ -28,14 +28,25 @@
 <main class="dashboard">
 <section class="centerStage">
   <div class="stageHeader"><span><i class="live"></i> <span data-i18n="wheelReady">Wheel ready</span></span><div class="stageTools"><kbd>Ctrl + Enter</kbd><button class="fullBtn" onclick="openFullscreenGame()">⛶ Full Screen</button></div></div>
+  <div class="gameLayout">
+  <div class="gameWheelColumn">
   <div class="wheelArea">
    <div class="wheelDecor"><span class="ringBubble rb1"></span><span class="ringBubble rb2"></span><span class="ringBubble rb3"></span><span class="ringStar rs1">✦</span><span class="ringStar rs2">✧</span><span class="ringStar rs3">◇</span></div>
    <div class="pointer"><span></span></div>
    <div class="wheelOuter"><canvas id="wheel" width="820" height="820"></canvas><div class="centerSpin" onclick="spin()"><strong>↻</strong><span data-i18n="clickSpin">CLICK TO SPIN</span><small>or press Ctrl + Enter</small></div></div>
    <button class="floatingSpin" onclick="spin()"><span>↻</span><b>SPIN</b></button>
   </div>
-  <div id="winner" class="winnerBanner"></div>
-  <div class="quickStats"><div><strong id="spinCount">0</strong><span data-i18n="wheelSpins">Wheel spins</span></div><div><strong id="hoursCount">0.00</strong><span data-i18n="hoursSpinning">Hours of spinning</span></div><div><strong id="lastResult">—</strong><span data-i18n="lastWinner">Last winner</span></div></div>
+  </div>
+  <div class="gameSidePanel glass">
+    <div id="winner" class="winnerBanner"><small>Winner</small><strong>—</strong></div>
+    <div class="quickStats sideStats">
+      <div class="statCard"><strong id="spinCount">0</strong><span data-i18n="wheelSpins">Wheel spins</span></div>
+      <div class="statCard"><strong id="hoursCount">0.00</strong><span data-i18n="hoursSpinning">Hours of spinning</span></div>
+      <div class="statCard"><strong id="lastResult">—</strong><span data-i18n="lastWinner">Last winner</span></div>
+    </div>
+    <div class="sideHint">🎡 <span data-i18n="spinStatsHint">Live game statistics</span></div>
+  </div>
+  </div>
  </section>
  
 </main>
@@ -73,7 +84,12 @@
   <div class="fullscreenStage">
     <div class="fsDecor" aria-hidden="true"><span>✦</span><span>◇</span><span>○</span><span>✧</span></div>
     <div class="fsWheelWrap"><div class="fsPointer"></div><div class="fsWheelOuter"><canvas id="fullscreenWheel" width="900" height="900"></canvas><div class="fsCenterSpin"><strong>↻</strong><span>CLICK TO SPIN</span><small>Ctrl + Enter</small></div></div></div>
-    <div id="fullscreenWinner" class="fullscreenWinner">Ready to spin</div>
+    <aside class="fsSidePanel">
+      <div id="fullscreenWinner" class="fullscreenWinner">Ready to spin</div>
+      <div class="fsStatCard"><strong id="fsSpinCount">0</strong><span>Wheel spins</span></div>
+      <div class="fsStatCard"><strong id="fsHoursCount">0.00</strong><span>Hours of spinning</span></div>
+      <div class="fsStatCard"><strong id="fsLastResult">—</strong><span>Last winner</span></div>
+    </aside>
     <button class="fsSpin" onclick="spin()">↻ <b>SPIN</b></button>
   </div>
 </div>
