@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SpinWheel — Spin • Pick • Decide</title>
+<title>SpinWheel</title>
 <meta name="theme-color" content="#071b4b">
 <link rel="icon" type="image/svg+xml" href="/static/spinwheel-logo.svg">
 <link rel="apple-touch-icon" href="/static/spinwheel-logo.svg">
@@ -12,7 +12,7 @@
 <body>
 <div class="bgfx" aria-hidden="true"><span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span><span class="bubble b4"></span><span class="bubble b5"></span><span class="shape s1">◇</span><span class="shape s2">✦</span><span class="shape s3">✧</span><span class="shape s4">◈</span><span class="shape s5">○</span></div>
 <header class="topbar">
- <a class="brand" href="/"><img src="/static/spinwheel-logo.svg" class="brandLogo"><span><b>SpinWheel</b><small>Spin • Pick • Decide</small></span></a>
+ <a class="brand" href="/"><img src="/static/spinwheel-logo.svg" class="brandLogo"><span><b>SpinWheel</b></span></a>
  <nav class="nav">
   <button onclick="newGame()">🎮 <span data-i18n="newGame">New</span></button>
   <div class="menu"><button onclick="toggleMenu('openMenu')">📂 <span data-i18n="open">Open</span>⌄</button><div id="openMenu" class="dropdown"><button onclick="openCloud()">☁️ <span data-i18n="openCloud">From cloud</span></button><button onclick="openLocal()">📄 <span data-i18n="openLocal">Local file</span></button><button onclick="helpChoose()">❔ <span data-i18n="helpChoose">Help me choose</span></button></div></div>
@@ -82,14 +82,17 @@
   <div class="fullscreenTop"><div class="fsBrand"><img src="/static/spinwheel-logo.svg"><b>SpinWheel</b></div><button onclick="closeFullscreenGame()">✕ Exit Full Screen</button></div>
   <div class="fullscreenStage">
     <div class="fsDecor" aria-hidden="true"><span>✦</span><span>◇</span><span>○</span><span>✧</span></div>
-    <div class="fsWheelWrap"><div class="fsPointer"></div><div class="fsWheelOuter"><canvas id="fullscreenWheel" width="900" height="900"></canvas><div class="fsCenterSpin"><strong>↻</strong><span>CLICK TO SPIN</span><small>Ctrl + Enter</small></div></div></div>
+    <aside class="fsEntriesPanel">
+      <div class="fsEntriesTitle">🎟 Entries playing <span id="fsEntryCount"></span></div>
+      <div id="fsEntries"></div>
+    </aside>
+    <div class="fsWheelWrap"><div class="fsPointer"></div><div class="fsWheelOuter"><canvas id="fullscreenWheel" width="1200" height="1200"></canvas><div class="fsCenterSpin"><strong>↻</strong><span>CLICK TO SPIN</span><small>Ctrl + Enter</small></div></div></div>
     <aside class="fsSidePanel">
       <div id="fullscreenWinner" class="fullscreenWinner">Ready to spin</div>
       <div class="fsStatsTitle">LIVE GAME</div>
       <div class="fsStatCard"><strong id="fsSpinCount">0</strong><span>Wheel spins</span></div>
       <div class="fsStatCard"><strong id="fsHoursCount">0.00</strong><span>Hours of spinning</span></div>
       <div class="fsStatCard"><strong id="fsLastResult">—</strong><span>Last winner</span></div>
-      <div class="fsEntriesBox"><div class="fsEntriesTitle">🎟 Entries playing</div><div id="fsEntries"></div></div>
     </aside>
     <button class="fsSpin" onclick="spin()">↻ <b>SPIN</b></button>
   </div>
