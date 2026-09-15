@@ -4,8 +4,8 @@ from flask_socketio import SocketIO, emit
 
 app=Flask(__name__,static_folder="static",template_folder="templates")
 app.secret_key=os.environ.get("SPIN_SECRET","CHANGE_THIS_SECRET")
-ADMIN_USER=os.environ.get("ADMIN_USER","owner")
-ADMIN_PASS=os.environ.get("ADMIN_PASS","CHANGE_THIS_PASSWORD")
+ADMIN_USER=os.environ.get("ADMIN_USER","nahom")
+ADMIN_PASS=os.environ.get("ADMIN_PASS","strongpassword")
 DB_PATH=os.environ.get("DB_PATH","spinwheel.db")
 app.config.update(SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE="Lax",
                   SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE","0")=="1")

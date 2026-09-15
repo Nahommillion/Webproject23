@@ -1,6 +1,7 @@
 let entries=[],weights=[],rotation=0,spinning=false,lastWinner=null,selected=-1,privateTarget=null,results=[];
 let currentLanguage=localStorage.getItem('spinwheel.language')||'en';
 let stats=JSON.parse(localStorage.getItem('spinwheel.stats')||'{"spins":0,"seconds":0}');
+let spinAudio=null,spinNoise=null,spinGain=null,lastTickIndex=-1;
 const $=id=>document.getElementById(id),canvas=$('wheel'),ctx=canvas.getContext('2d'),fullscreenCanvas=$('fullscreenWheel'),fullscreenCtx=fullscreenCanvas?.getContext('2d'),TAU=Math.PI*2;
 const T={en:{newGame:'New',open:'Open',save:'Save',share:'Share',gallery:'Gallery',customize:'Customize',more:'More',wheelReady:'Wheel ready',clickSpin:'CLICK TO SPIN',entries:'Entries',results:'Results',stats:'Stats',shuffle:'Shuffle',sort:'Sort',add:'Add',removeWinner:'Remove winner',appearance:'Appearance',themeColor:'Theme colour',backgroundColor:'Background colour',backgroundStyle:'Background style',graphics:'Animated graphics',sound:'Sound',confetti:'Confetti',spinTime:'Spin time',apply:'Apply',wheelSpins:'Wheel spins',hoursSpinning:'Hours of spinning',lastWinner:'Last winner',openCloud:'From cloud',openLocal:'Local file',helpChoose:'Help me choose',updateShared:'Update your shared wheel',savePrivate:'Save as private wheel',signIn:'Sign In',galleryNote:'You can add your own wheels to this gallery by clicking “Share” on the main page.',spinStatsHint:'Live game statistics'},am:{newGame:'አዲስ',open:'ክፈት',save:'አስቀምጥ',share:'አጋራ',gallery:'ጋለሪ',customize:'አቀናብር',more:'ተጨማሪ',wheelReady:'ዊል ዝግጁ ነው',clickSpin:'ለማሽከርከር ይጫኑ',entries:'ዝርዝሮች',results:'ውጤቶች',stats:'ስታቲስቲክስ',shuffle:'ቀላቅል',sort:'ደርድር',add:'ጨምር',removeWinner:'አሸናፊውን አስወግድ',appearance:'መልክ',themeColor:'የገጽታ ቀለም',backgroundColor:'የጀርባ ቀለም',backgroundStyle:'የጀርባ አይነት',graphics:'የተንቀሳቃሽ ግራፊክስ',sound:'ድምፅ',confetti:'ኮንፈቲ',spinTime:'የማሽከርከሪያ ጊዜ',apply:'ተግብር',wheelSpins:'የዊል ማሽከርከሪያዎች',hoursSpinning:'የማሽከርከር ሰዓታት',lastWinner:'የመጨረሻ አሸናፊ',openCloud:'ከክላውድ',openLocal:'የአካባቢ ፋይል',helpChoose:'እርዳኝ',updateShared:'የተጋራ ዊል አዘምን',savePrivate:'እንደ የግል ዊል አስቀምጥ',signIn:'ግባ',galleryNote:'የራስዎን ዊል ለመጨመር Share ይጫኑ።',spinStatsHint:'የጨዋታ ስታቲስቲክስ'}};
 ['om','ti','wal','so','sid'].forEach(l=>T[l]={...T.en});
@@ -12,10 +13,11 @@ function norm(x){return String(x).trim().toLocaleLowerCase()}
 function normalize(a){a%=TAU;return a<0?a+TAU:a}
 function load(){entries=(localStorage.getItem('spinwheel.entries')||'1\n2\n3\n4\n5\n6\n7\n8\n9\n10').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);sync();draw();updateStats();renderMainGallery('')}
 function sync(){localStorage.setItem('spinwheel.entries',entries.join('\n'));$('entryInput').value=entries.join('\n');$('entryCount').textContent=entries.length}
-function render(){sync();const list=$('entryList');list.innerHTML=entries.map((x,i)=>`<div class="entry ${i===selected?'selected':''}"><span>${i+1}. ${escapeHtml(x)}</span><button onclick="selected=${i};render()">✎</button></div>`).join('');renderResults();renderStatsPanel()}
+function render(){sync();const list=$('entryList');list.innerHTML=entries.map((x,i)=>`<div class="entry ${i===selected?'selected':''}"><span>${i+1}. ${escapeHtml(x)}</span><button onclick="selected=${i};render()">✎</button></div>`).join('');renderResults();renderStatsPanel();renderFullscreenEntries()}
 function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function renderResults(){$('resultsList').innerHTML=results.length?results.map((r,i)=>`<div class="result"><b>${i+1}. ${escapeHtml(r.name)}</b><small>${r.time}</small></div>`).join(''):'<div class="result">No spins yet.</div>'}
 function renderStatsPanel(){$('statsPanel').innerHTML=`<div class="statBox"><b>${stats.spins.toLocaleString()}</b>Wheel spins</div><div class="statBox"><b>${(stats.seconds/3600).toFixed(2)}</b>Hours of spinning</div><div class="statBox"><b>${escapeHtml(lastWinner||'—')}</b>Last winner</div>`}
+function renderFullscreenEntries(){const box=$('fsEntries');if(!box)return;box.innerHTML=entries.map((x,i)=>`<div class="fsEntry ${i===selected?'active':''}"><span class="num">${i+1}</span><span>${escapeHtml(x)}</span></div>`).join('')}
 $('entryInput').addEventListener('input',()=>{entries=$('entryInput').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);selected=-1;sync();draw();render()});
 function addEntry(){const x=prompt('Enter a number or name');if(x?.trim()){entries.push(x.trim());weights.push(1);render();draw()}}
 function renameSelected(){if(selected<0)return;const x=prompt('New name',entries[selected]);if(x?.trim()){entries[selected]=x.trim();render();draw()}}
@@ -29,10 +31,39 @@ async function getServerTarget(){try{const r=await fetch('/api/target',{cache:'n
 async function findWinnerIndex(){const target=await getServerTarget();if(target!==null){const i=targetIndexForValue(target);if(i>=0)return i;privateTarget=null;try{await fetch('/api/target/clear',{method:'POST'})}catch(e){}alert('The owner target was not found in the current wheel entries. Add that number/name to the wheel and try again.');return -1}return weightedRandom()}
 const POINTER_ANGLE=-Math.PI/2;
 function targetRotationForIndex(idx){const n=entries.length,step=TAU/n;/* Segment midpoint is placed exactly on the fixed pointer at 12 o'clock. */return normalize(POINTER_ANGLE-(idx+.5)*step)}
-async function spin(){if(spinning||entries.length<1)return;spinning=true;lastWinner=null;$('winner').textContent='';const idx=await findWinnerIndex();if(idx<0){spinning=false;document.querySelector('.spinButton')?.removeAttribute('disabled');return}const start=rotation,endBase=targetRotationForIndex(idx);let delta=normalize(endBase-start);const turns=8+Math.floor(rnd()*3);const end=start+turns*TAU+delta;const dur=Math.max(1000,+$('duration').value*1000);const t0=performance.now();document.querySelector('.spinButton')?.setAttribute('disabled','disabled');function frame(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,4);rotation=start+(end-start)*e;draw();if(p<1)requestAnimationFrame(frame);else{rotation=endBase;draw();finishSpin(idx,dur)}}requestAnimationFrame(frame)}
+async function spin(){
+ if(spinning||entries.length<1)return;
+ spinning=true; lastWinner=null; $('winner').textContent='';
+ const idx=await findWinnerIndex();
+ if(idx<0){spinning=false;return}
+ const start=rotation,endBase=targetRotationForIndex(idx),delta=normalize(endBase-start);
+ const dur=Math.max(1000,+$('duration').value*1000);
+ // Keep the wheel visually fast even when the configured duration is long.
+ // The extra turns scale with time so a 60-second spin does not crawl.
+ const turns=Math.max(8,Math.round((dur/1000)*1.65));
+ const end=start+turns*TAU+delta,t0=performance.now();
+ startSpinRumble();
+ document.querySelectorAll('.floatingSpin,.fsSpin').forEach(b=>b.classList.add('spin-rumble'));
+ let lastSeg=Math.floor(normalize(rotation-POINTER_ANGLE)/(TAU/Math.max(entries.length,1)));
+ function frame(now){
+   const p=Math.min(1,(now-t0)/dur);
+   // Mostly constant speed, with a professional deceleration only near the end.
+   const q=p<0.88 ? p/0.88*0.88 : 0.88+(1-Math.pow(1-(p-0.88)/0.12,3))*0.12;
+   rotation=start+(end-start)*q;
+   const seg=Math.floor(normalize(rotation-POINTER_ANGLE)/(TAU/Math.max(entries.length,1)));
+   if(seg!==lastSeg){lastSeg=seg;spinTick();}
+   draw();
+   if(p<1)requestAnimationFrame(frame);else{rotation=endBase;draw();stopSpinRumble();document.querySelectorAll('.floatingSpin,.fsSpin').forEach(b=>b.classList.remove('spin-rumble'));finishSpin(idx,dur)}
+ }
+ requestAnimationFrame(frame)
+}
 function finishSpin(idx,dur){lastWinner=entries[idx];stats.spins++;stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner;$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti()}
 function updateStats(){const h=(stats.seconds/3600).toFixed(2),lw=lastWinner||results[0]?.name||'—';$('spinCount').textContent=stats.spins.toLocaleString();$('hoursCount').textContent=h;$('activitySpins').textContent=stats.spins.toLocaleString();$('activityHours').textContent=h;$('lastResult').textContent=lw;if($('fsSpinCount'))$('fsSpinCount').textContent=stats.spins.toLocaleString();if($('fsHoursCount'))$('fsHoursCount').textContent=h;if($('fsLastResult'))$('fsLastResult').textContent=lw}
-function sound(){if(!$('sound').checked)return;try{const a=new (window.AudioContext||window.webkitAudioContext)();const notes=[523,659,784,1047];notes.forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,a.currentTime+i*.11);g.gain.exponentialRampToValueAtTime(.08,a.currentTime+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+i*.11+.18);o.connect(g);g.connect(a.destination);o.start(a.currentTime+i*.11);o.stop(a.currentTime+i*.11+.2)})}catch(e){}}
+function ensureAudio(){if(spinAudio)return spinAudio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;spinAudio=new AC();return spinAudio}
+function startSpinRumble(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();if(spinNoise)return;const o=a.createOscillator(),g=a.createGain();o.type='sawtooth';o.frequency.setValueAtTime(58,a.currentTime);g.gain.setValueAtTime(.018,a.currentTime);o.connect(g);g.connect(a.destination);o.start();spinNoise=o;spinGain=g}catch(e){}}
+function stopSpinRumble(){try{if(spinNoise&&spinAudio){spinGain.gain.exponentialRampToValueAtTime(.0001,spinAudio.currentTime+.08);spinNoise.stop(spinAudio.currentTime+.09)}}catch(e){}spinNoise=null;spinGain=null}
+function spinTick(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();const o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=95+Math.random()*35;g.gain.setValueAtTime(.0001,a.currentTime);g.gain.exponentialRampToValueAtTime(.035,a.currentTime+.004);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.035);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.04)}catch(e){}}
+function sound(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();const notes=[523,659,784,1047];notes.forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,a.currentTime+i*.11);g.gain.exponentialRampToValueAtTime(.08,a.currentTime+i*.11+.02);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+i*.11+.18);o.connect(g);g.connect(a.destination);o.start(a.currentTime+i*.11);o.stop(a.currentTime+i*.11+.2)})}catch(e){}}
 function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 const amUnits=['ዜሮ','አንድ','ሁለት','ሶስት','አራት','አምስት','ስድስት','ሰባት','ስምንት','ዘጠኝ','አስር','አስራ አንድ','አስራ ሁለት','አስራ ሶስት','አስራ አራት','አስራ አምስት','አስራ ስድስት','አስራ ሰባት','አስራ ስምንት','አስራ ዘጠኝ'];
 const amTens={20:'ሃያ',30:'ሰላሳ',40:'አርባ',50:'ሃምሳ',60:'ስልሳ',70:'ሰባ',80:'ሰማንያ',90:'ዘጠና'};
@@ -40,10 +71,10 @@ function amharicNumber(n){n=Math.trunc(Number(n));if(!Number.isFinite(n))return 
 function spokenWinner(name){const text=String(name).trim();const num=/^[+-]?\d+(?:\.\d+)?$/.test(text)?Number(text):null;if(currentLanguage==='am'){if(num!==null&&Number.isInteger(num))return 'አሸናፊው '+amharicNumber(num)+' ነው';return 'አሸናፊው '+text+' ነው'}return 'The winner is '+text}
 function pickVoice(lang){const voices=speechSynthesis.getVoices();if(lang==='am'){return voices.find(v=>/^am(-|_)/i.test(v.lang))||voices.find(v=>/ethi|amharic/i.test(v.name+' '+v.lang))||null}return voices.find(v=>/^en(-|_)/i.test(v.lang))||null}
 function browserAnnounce(text,lang){if(!('speechSynthesis' in window))return false;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='am'?'am-ET':'en-US';u.rate=lang==='am'?.78:.9;u.pitch=1;u.volume=1;const v=pickVoice(lang);if(v)u.voice=v;speechSynthesis.speak(u);return true}catch(e){return false}}
-function announceWinner(name){if(!$('sound').checked||!name)return;const text=spokenWinner(name);if(currentLanguage==='am'){const q=encodeURIComponent(text);const audio=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=am&q='+q);audio.volume=1;audio.play().catch(()=>browserAnnounce(text,'am'));}else{browserAnnounce(text,'en')}}
+function announceWinner(name){if(!$('sound').checked||!name)return;const text=spokenWinner(name);if(currentLanguage==='am'){browserAnnounce(text,'am');}else{browserAnnounce(text,'en')}}
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=()=>{ /* refreshes the available Amharic voice list */ }}
 function confetti(){for(let i=0;i<80;i++){const s=document.createElement('i');s.className='confetti';s.style.left=Math.random()*100+'vw';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}}
-function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');draw();$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner}`:'Ready to spin';try{el.requestFullscreen?.()}catch(e){}}
+function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');renderFullscreenEntries();draw();$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner}`:'Ready to spin';updateStats();try{el.requestFullscreen?.()}catch(e){}}
 function closeFullscreenGame(){const el=$('fullscreenGame');el.classList.add('hidden');if(document.fullscreenElement)document.exitFullscreen?.()}
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement && !$('fullscreenGame').classList.contains('hidden'))$('fullscreenGame').classList.add('hidden')});
 function showSideTab(w,b){document.querySelectorAll('.sideTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('entryList').classList.toggle('hidden',w!=='list');$('resultsList').classList.toggle('hidden',w!=='results');$('statsPanel').classList.toggle('hidden',w!=='stats')}
