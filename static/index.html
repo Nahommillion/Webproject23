@@ -48,8 +48,7 @@
   </div>
  </section>
  
-</main>
-<section class="belowPanels">
+
   <section class="leftGallery glass">
   <div class="panelTitle"><h2>🎨 <span data-i18n="gallery">Gallery</span></h2></div>
   <div class="search"><input id="gallerySearchMain" placeholder="Search templates, wheels..." oninput="renderMainGallery(this.value)"> 🔍</div>
@@ -65,7 +64,8 @@
   <button class="remove" onclick="removeWinner()">🗑 <span data-i18n="removeWinner">Remove winner</span></button>
   <div id="customize" class="customize hidden"><h3 data-i18n="appearance">Appearance</h3><label data-i18n="themeColor">Theme colour</label><input id="themeColor" type="color" value="#7c5cff"><label data-i18n="backgroundColor">Background colour</label><input id="bgColor" type="color" value="#06183d"><label data-i18n="backgroundStyle">Background style</label><select id="bgStyle"><option value="solid">Solid</option><option value="gradient">Gradient</option><option value="pattern">Pattern</option><option value="dots">Dots</option></select><label class="check"><input id="graphics" type="checkbox" checked> <span data-i18n="graphics">Animated graphics</span></label><label class="check"><input id="sound" type="checkbox" checked> <span data-i18n="sound">Sound</span></label><label class="check"><input id="confetti" type="checkbox" checked> <span data-i18n="confetti">Confetti</span></label><label data-i18n="spinTime">Spin time</label><div class="range"><input id="duration" type="range" min="1" max="60" value="6"><b><span id="durationLabel">6</span>s</b></div><button class="apply" onclick="applyTheme()" data-i18n="apply">Apply</button></div>
  </aside>
-</section>
+
+</main>
 
 <section class="openSaveBar"><div class="glass actionCard"><button onclick="openCloud()">📂 <span data-i18n="open">Open</span></button><small>☁️ From cloud</small><small>📄 Local file</small></div><div class="glass actionCard"><button onclick="saveShared()">💾 <span data-i18n="save">Save</span></button><small>🔄 Update your shared wheel</small><small>🔒 Save as private wheel</small></div><div class="glass shareCard"><div><h3>🔗 Share</h3><b>Visibility</b><p>If you continue, you will create a public link to your current wheel, including its names, colours and settings.</p><input id="sharePreview" readonly placeholder="Public link appears here"><div><button onclick="closeModal()" class="secondary">Cancel</button><button onclick="shareWheel()" class="primary">Continue</button></div></div></div></section>
 <section class="infoGrid">
