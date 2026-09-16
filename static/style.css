@@ -215,3 +215,18 @@
 .pointsHead{display:flex;justify-content:space-between;align-items:center;gap:8px}.pointsHead h3{margin:0;font-size:14px}.pointsHead span{font-weight:900;color:#55ddff;font-size:12px}.pointsControls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}.pointsControls label{font-size:10px;color:#a9c3e7}.pointsControls input{width:100%;box-sizing:border-box;margin-top:3px;background:#061d43;color:#fff;border:1px solid #ffffff20;border-radius:7px;padding:6px}.pointsList{max-height:190px;overflow:auto}.pointRow{display:flex;align-items:center;gap:6px;justify-content:space-between;padding:5px 4px;border-bottom:1px solid #ffffff0d;font-size:10px}.pointRow span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pointRow input{width:75px;background:#061d43;color:#fff;border:1px solid #ffffff20;border-radius:6px;padding:4px;font-size:10px}.pointsNote{font-size:9px;color:#7898bf;margin-top:7px}.fsPointsBox{width:100%;margin-top:10px;padding:10px;border-radius:14px;background:#031633aa;border:1px solid #58d9ff33;box-sizing:border-box}.fsPointsMeta{font-size:10px;color:#9db9dd;margin:5px 0}.fsPointsList{max-height:30vh;overflow:auto}.fsPointRow{display:flex;justify-content:space-between;gap:8px;padding:5px 4px;border-bottom:1px solid #ffffff0d;font-size:10px}.fsPointRow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fsPointRow b{color:#55ddff;white-space:nowrap}.fsPointRow.active{background:#1454a855;border-radius:6px;outline:1px solid #58e2ff77}
 @media(max-width:1200px) and (min-width:901px){.fullscreenStage{grid-template-columns:180px minmax(420px,1fr) 240px!important}.fsWheelWrap{width:min(calc(100% - 4px),calc(100vh - 100px))!important;height:min(calc(100% - 4px),calc(100vh - 100px))!important}}
 @media(max-width:900px){.fsWheelWrap{width:min(92vw,76vh,720px)!important;height:min(92vw,76vh,720px)!important}.fullscreenStage{grid-template-columns:1fr!important}.fsSidePanel{overflow:visible!important}}
+
+/* V16: desktop workspace — keep the wheel central and put all editable tables/pools on its right. */
+@media(min-width:901px){
+  .dashboard{grid-template-columns:minmax(220px,19vw) minmax(560px,1fr) minmax(390px,30vw)!important;align-items:stretch;}
+  .centerStage{min-width:0!important;}
+  .gameLayout{display:block!important;width:100%!important;}
+  .gameWheelColumn{width:100%!important;}
+  .gameSidePanel{display:none!important;}
+  .wheelArea{width:min(100%,82vh,900px)!important;max-width:none!important;}
+  .dashboard>.rightPanel{min-width:0!important;max-height:none!important;overflow:auto!important;}
+  .dashboard>.rightPanel #entryList{max-height:34vh!important;overflow:auto!important;}
+  .dashboard>.rightPanel .pointsPanel{max-height:38vh!important;overflow:auto!important;}
+  .openSaveBar{grid-template-columns:1fr 1fr 2fr!important;}
+}
+.payoutSummary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.payoutSummary>div{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid #ffffff16;border-radius:8px;background:#061d43aa;font-size:10px}.payoutSummary b{color:#55ddff}.fsPointsMeta{line-height:1.6}
