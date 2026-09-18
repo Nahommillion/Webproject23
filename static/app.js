@@ -2,7 +2,7 @@ let entries=[],weights=[],rotation=0,spinning=false,lastWinner=null,selected=-1,
 let currentLanguage=localStorage.getItem('spinwheel.language')||'en';
 let stats=JSON.parse(localStorage.getItem('spinwheel.stats')||'{"spins":0,"seconds":0}');
 let entryPoints=JSON.parse(localStorage.getItem('spinwheel.entryPoints')||'[]');
-const WINNER_SHARE=20;
+const WINNER_SHARE=80;
 const HOUSE_SHARE=20;
 let winnerShare=WINNER_SHARE;
 let spinAudio=null,spinNoise=null,spinGain=null,lastTickIndex=-1;
@@ -99,8 +99,8 @@ const amUnits=['ዜሮ','አንድ','ሁለት','ሶስት','አራት','አም�
 const amTens={20:'ሃያ',30:'ሰላሳ',40:'አርባ',50:'ሃምሳ',60:'ስልሳ',70:'ሰባ',80:'ሰማንያ',90:'ዘጠና'};
 function amharicNumber(n){n=Math.trunc(Number(n));if(!Number.isFinite(n))return String(n);if(n<0)return 'አሉታዊ '+amharicNumber(-n);if(n<20)return amUnits[n];if(n<100){let t=Math.floor(n/10)*10,r=n%10;return amTens[t]+(r?' '+amUnits[r]:'')}if(n<1000){let h=Math.floor(n/100),r=n%100;let hword=h===1?'አንድ መቶ':amUnits[h]+' መቶ';return hword+(r?' '+amharicNumber(r):'')}if(n<1000000){let th=Math.floor(n/1000),r=n%1000;let thword=th===1?'አንድ ሺህ':amharicNumber(th)+' ሺህ';return thword+(r?' '+amharicNumber(r):'')}if(n<1000000000){let m=Math.floor(n/1000000),r=n%1000000;let mw=m===1?'አንድ ሚሊዮን':amharicNumber(m)+' ሚሊዮን';return mw+(r?' '+amharicNumber(r):'')}return String(n)}
 function spokenWinner(name){const text=String(name).trim();const num=/^[+-]?\d+$/.test(text)?Number(text):null;if(currentLanguage==='am'){if(num!==null)return 'አሸናፊው፣ ቁጥር '+amharicNumber(num)+'፣ ነው።';return 'አሸናፊው፣ '+text+'፣ ነው።'}return 'The winner is '+text+'.'}
-function pickVoice(lang){const voices=speechSynthesis.getVoices();if(lang==='am'){return voices.find(v=>/^am-ET$/i.test(v.lang))||voices.find(v=>/^am(-|_)/i.test(v.lang))||voices.find(v=>/amharic|ethiopia|ethiopian/i.test(v.name+' '+v.lang))||null}return voices.find(v=>/^en(-|_)/i.test(v.lang))||null}
-function browserAnnounce(text,lang){if(!('speechSynthesis' in window))return false;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='am'?'am-ET':'en-US';u.rate=lang==='am'?.58:.9;u.pitch=1;u.volume=1;const v=pickVoice(lang);if(v)u.voice=v;speechSynthesis.speak(u);return true}catch(e){return false}}
+function pickVoice(lang){const voices=speechSynthesis.getVoices();if(lang==='am'){return voices.find(v=>/^am-ET$/i.test(v.lang))||voices.find(v=>/^am(-|_)/i.test(v.lang))||voices.find(v=>/amharic|ethiopia|ethiopian|mekdes/i.test(v.name+' '+v.lang))||null}return voices.find(v=>/^en(-|_)/i.test(v.lang))||null}
+function browserAnnounce(text,lang){if(!('speechSynthesis' in window))return false;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='am'?'am-ET':'en-US';u.rate=lang==='am'?.72:.9;u.pitch=1;u.volume=1;const v=pickVoice(lang);if(lang==='am'&&!v)return false;if(v)u.voice=v;speechSynthesis.speak(u);return true}catch(e){return false}}
 function announceWinner(name){if(!$('sound').checked||!name)return;const text=spokenWinner(name);if(currentLanguage==='am'){browserAnnounce(text,'am');}else{browserAnnounce(text,'en')}}
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=()=>{ /* refreshes the available Amharic voice list */ }}
 function confetti(){for(let i=0;i<80;i++){const s=document.createElement('i');s.className='confetti';s.style.left=Math.random()*100+'vw';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}}
