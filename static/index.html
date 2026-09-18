@@ -36,14 +36,15 @@
    <div class="wheelOuter"><canvas id="wheel" width="820" height="820"></canvas><div class="centerSpin" onclick="spin()"><strong>↻</strong><span data-i18n="clickSpin">CLICK TO SPIN</span><small>or press Ctrl + Enter</small></div></div>
    <button class="floatingSpin" onclick="spin()"><span>↻</span><b>SPIN</b></button>
   </div>
+  </div>
   <div class="gameSidePanel glass">
     <div id="winner" class="winnerBanner"><small>Winner</small><strong>—</strong></div>
     <div class="quickStats sideStats">
-      <div class="statCard"><strong id="spinCount">0</strong><span data-i18n="wheelSpins">Wheel spins</span></div>
-      <div class="statCard"><strong id="hoursCount">0.00</strong><span data-i18n="hoursSpinning">Hours of spinning</span></div>
-      <div class="statCard"><strong id="lastResult">—</strong><span data-i18n="lastWinner">Last winner</span></div>
+      <div class="statCard"><strong>🏆</strong><b id="spinCount">0</b><span data-i18n="wheelSpins">Wheel spins</span></div>
+      <div class="statCard"><strong>⏱️</strong><b id="hoursCount">0.00</b><span data-i18n="hoursSpinning">Hours of spinning</span></div>
+      <div class="statCard"><strong>🎯</strong><b id="lastResult">—</b><span data-i18n="lastWinner">Last winner</span></div>
     </div>
-    <div class="sideHint">🎡 <span data-i18n="spinStatsHint">Live game statistics</span></div>
+    <div class="sideHint">📊 <span data-i18n="spinStatsHint">Live game statistics</span></div>
   </div>
   </div>
  </section>
@@ -63,9 +64,9 @@
   <div id="entryList"></div><div id="resultsList" class="hidden"></div><div id="statsPanel" class="hidden"></div>
   <div class="pointsPanel glass">
     <div class="pointsHead"><h3>🎟 Entry Points</h3><span id="poolTotal">0 pts</span></div>
-    <div class="pointsControls"><label>Points per entry <input id="pointsDefault" type="number" min="0" step="1" value="100" oninput="applyDefaultPoints()"></label><label>Winner share <input id="winnerShare" type="number" min="0" max="100" step="1" value="80" readonly>%</label></div>
+    <div class="pointsControls"><label>Points per entry <input id="pointsDefault" type="number" min="0" step="1" value="100" oninput="applyDefaultPoints()"></label><label>Winner share <input id="winnerShare" type="number" min="0" max="100" step="1" value="20" readonly>%</label></div>
     <div id="pointsList" class="pointsList"></div>
-    <div class="payoutSummary"><div><span>🏆 Winner gets</span><b id="winnerPayoutPct">80%</b></div><div><span>🏠 Our share</span><b>20%</b></div><div><span>Winner payout</span><b id="winnerPayout">0 pts</b></div><div><span>Our amount</span><b id="housePayout">0 pts</b></div></div><div class="pointsNote">Points are game-only values; no cash betting or cash-out is used.</div>
+    <div class="payoutSummary"><div class="winnerOnlyPayout"><span>🏆 Winner payout (20% of total)</span><b id="winnerPayout">0 pts</b></div></div><div class="pointsNote">Points are game-only values; no cash betting or cash-out is used.</div>
   </div>
   <button class="remove" onclick="removeWinner()">🗑 <span data-i18n="removeWinner">Remove winner</span></button>
   <div id="customize" class="customize hidden"><h3 data-i18n="appearance">Appearance</h3><label data-i18n="themeColor">Theme colour</label><input id="themeColor" type="color" value="#7c5cff"><label data-i18n="backgroundColor">Background colour</label><input id="bgColor" type="color" value="#06183d"><label data-i18n="backgroundStyle">Background style</label><select id="bgStyle"><option value="solid">Solid</option><option value="gradient">Gradient</option><option value="pattern">Pattern</option><option value="dots">Dots</option></select><label class="check"><input id="graphics" type="checkbox" checked> <span data-i18n="graphics">Animated graphics</span></label><label class="check"><input id="sound" type="checkbox" checked> <span data-i18n="sound">Sound</span></label><label class="check"><input id="confetti" type="checkbox" checked> <span data-i18n="confetti">Confetti</span></label><label data-i18n="spinTime">Spin time</label><div class="range"><input id="duration" type="range" min="1" max="60" value="6"><b><span id="durationLabel">6</span>s</b></div><button class="apply" onclick="applyTheme()" data-i18n="apply">Apply</button></div>
@@ -99,7 +100,7 @@
       <div class="fsStatCard"><strong id="fsSpinCount">0</strong><span>Wheel spins</span></div>
       <div class="fsStatCard"><strong id="fsHoursCount">0.00</strong><span>Hours of spinning</span></div>
       <div class="fsStatCard"><strong id="fsLastResult">—</strong><span>Last winner</span></div>
-      <div class="fsPointsBox"><div class="pointsHead"><h3>🎟 Entry Points</h3><span id="fsPoolTotal">0 pts</span></div><div class="fsPointsMeta">Winner: <b id="fsWinnerShare">80%</b> · Our share: <b>20%</b> · Winner payout: <b id="fsWinnerPayout">0 pts</b></div><div id="fsPointsList" class="fsPointsList"></div></div>
+      <div class="fsPointsBox"><div class="pointsHead"><h3>🎟 Entry Points</h3><span id="fsPoolTotal">0 pts</span></div><div class="fsPointsMeta">🏆 Winner payout (20% of total): <b id="fsWinnerPayout">0 pts</b></div><div id="fsPointsList" class="fsPointsList"></div></div>
     </aside>
     <button class="fsSpin" onclick="spin()">↻ <b>SPIN</b></button>
   </div>

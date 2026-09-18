@@ -230,3 +230,26 @@
   .openSaveBar{grid-template-columns:1fr 1fr 2fr!important;}
 }
 .payoutSummary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.payoutSummary>div{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid #ffffff16;border-radius:8px;background:#061d43aa;font-size:10px}.payoutSummary b{color:#55ddff}.fsPointsMeta{line-height:1.6}
+
+/* V17: restore the live winner/stat cards beside the normal wheel. Fullscreen is intentionally untouched. */
+@media(min-width:901px){
+  .gameLayout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(230px,270px)!important;gap:16px!important;align-items:center!important;width:100%!important;}
+  .gameWheelColumn{min-width:0!important;}
+  .gameSidePanel{display:flex!important;width:100%!important;min-height:clamp(420px,62vh,760px)!important;padding:12px!important;box-sizing:border-box!important;align-self:center!important;}
+  .gameSidePanel .winnerBanner{min-height:100px!important;}
+  .gameSidePanel .winnerBanner strong{font-size:clamp(24px,2.4vw,38px)!important;}
+  .sideStats{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;width:100%!important;}
+  .sideStats .statCard{min-height:92px!important;justify-content:center!important;padding:10px!important;}
+  .sideStats .statCard strong{font-size:25px!important;line-height:1!important;color:#55ddff!important;}
+  .sideStats .statCard b{font-size:24px!important;color:#fff!important;overflow-wrap:anywhere!important;}
+  .sideStats .statCard span{font-size:11px!important;}
+  .sideHint{margin-top:auto!important;}
+  .dashboard>.rightPanel{overflow:auto!important;}
+  .dashboard>.rightPanel #entryList{max-height:30vh!important;}
+  .dashboard>.rightPanel .pointsPanel{max-height:42vh!important;}
+  .payoutSummary{grid-template-columns:1fr!important;}
+  .payoutSummary .winnerOnlyPayout{display:flex!important;}
+}
+@media(max-width:900px){
+  .gameSidePanel{display:flex!important;}
+}

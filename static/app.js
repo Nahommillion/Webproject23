@@ -2,7 +2,7 @@ let entries=[],weights=[],rotation=0,spinning=false,lastWinner=null,selected=-1,
 let currentLanguage=localStorage.getItem('spinwheel.language')||'en';
 let stats=JSON.parse(localStorage.getItem('spinwheel.stats')||'{"spins":0,"seconds":0}');
 let entryPoints=JSON.parse(localStorage.getItem('spinwheel.entryPoints')||'[]');
-const WINNER_SHARE=80;
+const WINNER_SHARE=20;
 const HOUSE_SHARE=20;
 let winnerShare=WINNER_SHARE;
 let spinAudio=null,spinNoise=null,spinGain=null,lastTickIndex=-1;

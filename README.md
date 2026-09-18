@@ -1,6 +1,7 @@
-# SpinWheel V16
-- Improved Amharic winner speech pronunciation/phrasing and slower speech rate.
-- Fixed winner share to 80% and house share to 20%.
-- Shows total entry points, winner payout, and house amount.
-- Desktop normal view uses the full horizontal workspace with the wheel central and entries/points/settings in the right sidebar; fullscreen layout remains unchanged.
-- Existing owner admin and private phone controller are preserved.
+# SpinWheel V17
+
+- Restored normal-screen live game statistics beside the wheel: 🏆 Wheel spins, ⏱️ Hours of spinning, 🎯 Last winner.
+- Normal-screen right sidebar retains Entries/Results/Stats and Entry Points.
+- Normal-screen winner payout display shows only the winner payout (80% of the total points pool); the existing 20% house calculation remains internal.
+- Fullscreen layout and behavior are unchanged from V16.
+- Admin and private phone controller remain unchanged.
