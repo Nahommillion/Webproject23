@@ -253,3 +253,15 @@
 @media(max-width:900px){
   .gameSidePanel{display:flex!important;}
 }
+
+/* V21: keep the fullscreen winner permanently visible while the entry-bet list scrolls. */
+@media(min-width:901px){
+  .fsSidePanel{display:flex!important;flex-direction:column!important;overflow:hidden!important;min-height:0!important;}
+  .fsSidePanel .fullscreenWinner{flex:0 0 auto!important;position:sticky!important;top:0!important;z-index:5!important;margin:0 0 10px!important;background:linear-gradient(145deg,#081c4df5,#122c64f5)!important;}
+  .fsSidePanel .fsStatsTitle,.fsSidePanel .fsStatCard{flex:0 0 auto!important;}
+  .fsSidePanel .fsPointsBox{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;}
+  .fsSidePanel .fsPointsList{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow:auto!important;}
+}
+@media(max-width:900px){
+  .fsSidePanel .fullscreenWinner{position:sticky!important;top:0!important;z-index:5!important;background:linear-gradient(145deg,#081c4df5,#122c64f5)!important;}
+}

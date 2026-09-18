@@ -101,7 +101,15 @@ function amharicNumber(n){n=Math.trunc(Number(n));if(!Number.isFinite(n))return 
 function spokenWinner(name){const text=String(name).trim();const num=/^[+-]?\d+$/.test(text)?Number(text):null;if(currentLanguage==='am'){if(num!==null)return 'አሸናፊው፣ ቁጥር '+amharicNumber(num)+'፣ ነው።';return 'አሸናፊው፣ '+text+'፣ ነው።'}return 'The winner is '+text+'.'}
 function pickVoice(lang){const voices=speechSynthesis.getVoices();if(lang==='am'){return voices.find(v=>/^am-ET$/i.test(v.lang))||voices.find(v=>/^am(-|_)/i.test(v.lang))||voices.find(v=>/amharic|ethiopia|ethiopian|mekdes/i.test(v.name+' '+v.lang))||null}return voices.find(v=>/^en(-|_)/i.test(v.lang))||null}
 function browserAnnounce(text,lang){if(!('speechSynthesis' in window))return false;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='am'?'am-ET':'en-US';u.rate=lang==='am'?.72:.9;u.pitch=1;u.volume=1;const v=pickVoice(lang);if(lang==='am'&&!v)return false;if(v)u.voice=v;speechSynthesis.speak(u);return true}catch(e){return false}}
-function announceWinner(name){if(!$('sound').checked||!name)return;const text=spokenWinner(name);if(currentLanguage==='am'){browserAnnounce(text,'am');}else{browserAnnounce(text,'en')}}
+function announceWinner(name){if(!$('sound').checked||!name)return;const text=spokenWinner(name);if(currentLanguage==='am'){
+  const spoken=browserAnnounce(text,'am');
+  if(!spoken){
+    try{
+      const audio=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=am&q='+encodeURIComponent(text));
+      audio.volume=1; audio.play().catch(()=>{});
+    }catch(e){}
+  }
+}else{browserAnnounce(text,'en')}}
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=()=>{ /* refreshes the available Amharic voice list */ }}
 function confetti(){for(let i=0;i<80;i++){const s=document.createElement('i');s.className='confetti';s.style.left=Math.random()*100+'vw';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}}
 function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');renderFullscreenEntries();renderPoints();requestAnimationFrame(()=>{resizeFullscreenCanvas();draw()});$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner} · +${winnerPointAmount().toLocaleString()} pts`:'Ready to spin';updateStats();try{el.requestFullscreen?.()}catch(e){}}
