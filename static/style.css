@@ -370,3 +370,21 @@
 @keyframes celebrateFly{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
 @keyframes celebrateStarFly{to{transform:translate(var(--x),var(--y)) rotate(360deg) scale(.2);opacity:0}}
 @media(max-width:900px){.fsTopTools{gap:4px}.fsTopTools button{padding:7px 8px}.fsQuickPanel{top:58px;right:10px}.fsPointsList{max-height:40vh!important}}
+
+/* V32: show the complete entry-bet list in the available fullscreen space.
+   The right panel itself never scrolls; the bet list uses all remaining height.
+   Ten normal entries fit without hiding the lower rows. */
+@media (min-width:901px){
+  .fullscreenStage{overflow:hidden!important;align-items:stretch!important;}
+  .fsEntriesPanel,.fsSidePanel{height:100%!important;max-height:none!important;min-height:0!important;overflow:hidden!important;}
+  .fsSidePanel{display:grid!important;grid-template-rows:auto auto auto auto minmax(0,1fr)!important;align-content:stretch!important;}
+  .fsSidePanel .fullscreenWinner{min-height:76px!important;padding:10px 8px!important;margin:0!important;font-size:clamp(20px,1.8vw,32px)!important;}
+  .fsSidePanel .fsStatsTitle{margin:2px 0!important;}
+  .fsSidePanel .fsStatCard{padding:7px 8px!important;}
+  .fsSidePanel .fsStatCard strong{font-size:clamp(22px,2.2vw,34px)!important;line-height:1.05!important;}
+  .fsSidePanel .fsPointsBox{min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important;padding:8px!important;margin-top:4px!important;}
+  .fsSidePanel .fsPointsMeta{font-size:9px!important;line-height:1.2!important;margin:3px 0!important;}
+  .fsSidePanel .fsPointsList{min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;}
+  .fsSidePanel .fsPointRow{min-height:0!important;height:27px!important;flex:1 1 27px!important;padding:2px 4px!important;font-size:10px!important;box-sizing:border-box!important;}
+  .fsSidePanel .fsBetInput input{height:22px!important;padding:2px 5px!important;width:68px!important;font-size:11px!important;}
+}
