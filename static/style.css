@@ -421,3 +421,89 @@
     height:auto!important;
   }
 }
+
+/* V36: fullscreen right panel — exact equal stat-card sizing and all 10 entry bets visible. */
+@media (min-width:901px){
+  .fullscreenStage{overflow:hidden!important;align-items:stretch!important;}
+  .fsSidePanel{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+    padding:8px!important;
+    padding-bottom:8px!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .fsSidePanel .fullscreenWinner,
+  .fsSidePanel .fsStatCard.fsLastWinnerCard,
+  .fsSidePanel .fsStatCard{
+    flex:0 0 52px!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    padding:5px 8px!important;
+  }
+  .fsSidePanel .fullscreenWinner{
+    font-size:clamp(18px,1.7vw,28px)!important;
+    line-height:1.05!important;
+    overflow:hidden!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  .fsSidePanel .fsStatCard strong,
+  .fsSidePanel .fsStatCard.fsLastWinnerCard strong{
+    font-size:clamp(20px,2vw,30px)!important;
+    line-height:1!important;
+    max-width:100%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .fsSidePanel .fsStatCard span{font-size:10px!important;line-height:1!important;}
+  .fsSidePanel .fsStatsTitle{flex:0 0 16px!important;height:16px!important;margin:0!important;line-height:16px!important;}
+  .fsSidePanel .fsPointsBox{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:6px!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+    box-sizing:border-box!important;
+  }
+  .fsSidePanel .pointsHead{flex:0 0 20px!important;min-height:20px!important;}
+  .fsSidePanel .pointsHead h3{font-size:11px!important;}
+  .fsSidePanel .pointsHead span{font-size:10px!important;}
+  .fsSidePanel .fsAllBet{flex:0 0 26px!important;height:26px!important;}
+  .fsSidePanel .fsAllBet input{height:23px!important;padding:2px 5px!important;font-size:10px!important;}
+  .fsSidePanel .fsAllBet button{height:23px!important;padding:2px 7px!important;font-size:9px!important;}
+  .fsSidePanel .fsPointsMeta{flex:0 0 25px!important;height:25px!important;font-size:8px!important;line-height:1.05!important;margin:2px 0!important;overflow:hidden!important;}
+  .fsSidePanel .fsPointsList{
+    flex:1 1 auto!important;
+    min-height:270px!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .fsSidePanel .fsPointRow{
+    flex:1 1 27px!important;
+    height:auto!important;
+    min-height:24px!important;
+    padding:1px 4px!important;
+    font-size:10px!important;
+    box-sizing:border-box!important;
+  }
+  .fsSidePanel .fsPointName{font-size:10px!important;}
+  .fsSidePanel .fsBetInput{font-size:7px!important;gap:3px!important;}
+  .fsSidePanel .fsBetInput input{width:62px!important;height:21px!important;padding:1px 4px!important;font-size:10px!important;}
+}
