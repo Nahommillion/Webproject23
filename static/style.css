@@ -277,3 +277,8 @@
 .fsEntry{position:relative}
 .fsEntryRemove{margin-left:auto;flex:0 0 auto;width:24px;height:24px;border:1px solid #ff6b7b66;background:#681d35aa;color:#fff;border-radius:6px;font-size:18px;line-height:18px;font-weight:900;cursor:pointer}
 .fsEntryRemove:hover{background:#a52a49}
+
+/* Full-screen entry dialogs: keep the game in browser full-screen while editing entries. */
+#modal { z-index: 100000; }
+#fullscreenGame { z-index: 90000; }
+#fullscreenGame .fsEntryRemove { position: relative; z-index: 2; }

@@ -33,8 +33,44 @@ function renderStatsPanel(){$('statsPanel').innerHTML=`<div class="statBox"><b>$
 function renderFullscreenEntries(){const box=$('fsEntries');if(!box)return;const count=$('fsEntryCount');if(count)count.textContent=`(${entries.length})`;box.innerHTML=entries.map((x,i)=>`<div class="fsEntry ${i===selected?'active':''}"><span class="num">${i+1}</span><span class="entryName">${escapeHtml(x)}</span><button type="button" class="fsEntryRemove" title="Remove entry" onclick="fsRemoveEntry(event,${i})">−</button></div>`).join('')}
 $('entryInput').addEventListener('input',()=>{entries=$('entryInput').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);selected=-1;sync();draw();render()});
 function addEntry(){const x=prompt('Enter a number or name');if(x?.trim()){entries.push(x.trim());weights.push(1);entryPoints.push(Math.max(0,Number($('pointsDefault')?.value||100)));render();draw()}}
-function fsAddEntry(e){e?.stopPropagation();if(spinning)return;const x=prompt('Enter a number or name');if(x?.trim()){entries.push(x.trim());weights.push(1);entryPoints.push(Math.max(0,Number($('fsAllBetAmount')?.value||$('pointsDefault')?.value||100)));selected=-1;sync();render();draw();renderFullscreenEntries();}}
-function fsRemoveEntry(e,i){e?.stopPropagation();if(spinning)return;if(i<0||i>=entries.length)return;const name=entries[i];if(!confirm('Remove entry "'+name+'"?'))return;entries.splice(i,1);weights.splice(i,1);entryPoints.splice(i,1);if(selected===i)selected=-1;else if(selected>i)selected--;sync();render();draw();renderFullscreenEntries();}
+function fsAddEntry(e){
+  e?.preventDefault();e?.stopPropagation();
+  if(spinning)return;
+  openModal('Add entry',
+    '<p>Enter the new entry without leaving Full Screen.</p><input id="fsNewEntryName" class="galleryInput" autocomplete="off" placeholder="Entry name or number">',
+    [
+      ['Cancel','secondary',()=>closeModal()],
+      ['Add','primary',()=>{
+        const input=$('fsNewEntryName'); const x=input?.value?.trim();
+        if(!x){input?.focus();return;}
+        entries.push(x); weights.push(1);
+        entryPoints.push(Math.max(0,Number($('fsAllBetAmount')?.value||$('pointsDefault')?.value||100)));
+        selected=-1; sync(); render(); draw(); renderFullscreenEntries(); closeModal();
+        requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
+      }]
+    ]
+  );
+  requestAnimationFrame(()=>$('fsNewEntryName')?.focus());
+}
+function fsRemoveEntry(e,i){
+  e?.preventDefault();e?.stopPropagation();
+  if(spinning)return;
+  if(i<0||i>=entries.length)return;
+  const name=entries[i];
+  openModal('Remove entry',
+    '<p>Remove <b>'+escapeHtml(name)+'</b> from this wheel?</p>',
+    [
+      ['Cancel','secondary',()=>closeModal()],
+      ['Remove','primary',()=>{
+        if(i<0||i>=entries.length){closeModal();return;}
+        entries.splice(i,1); weights.splice(i,1); entryPoints.splice(i,1);
+        if(selected===i)selected=-1;else if(selected>i)selected--;
+        sync(); render(); draw(); renderFullscreenEntries(); closeModal();
+        requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
+      }]
+    ]
+  );
+}
 function renameSelected(){if(selected<0)return;const x=prompt('New name',entries[selected]);if(x?.trim()){entries[selected]=x.trim();render();draw()}}
 function shuffleEntries(){for(let i=entries.length-1;i>0;i--){let j=Math.floor(rnd()*(i+1));[entries[i],entries[j]]=[entries[j],entries[i]]}selected=-1;render();draw()}
 function sortEntries(){entries.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));selected=-1;render();draw()}
