@@ -110,13 +110,13 @@ def record_play():
 @app.get("/api/admin/daily-plays")
 def daily_plays():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401
-    c=db(); rows=c.execute("SELECT play_date,total_plays,total_bet,total_win,total_seconds,last_play_at FROM daily_plays ORDER BY play_date DESC LIMIT 365").fetchall(); c.close()
+    c=db(); rows=c.execute("SELECT play_date,total_plays,total_bet,total_win,total_seconds,last_play_at FROM daily_plays ORDER BY play_date DESC").fetchall(); c.close()
     return jsonify([dict(x) for x in rows])
 
 @app.get("/api/admin/play-transactions")
 def play_transactions():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401
-    c=db(); rows=c.execute("SELECT id,play_date,played_at,winner,total_bet,total_win,spin_seconds,spin_number FROM play_transactions ORDER BY id DESC LIMIT 500").fetchall(); c.close()
+    c=db(); rows=c.execute("SELECT id,play_date,played_at,winner,total_bet,total_win,spin_seconds,spin_number FROM play_transactions ORDER BY id DESC").fetchall(); c.close()
     return jsonify([dict(x) for x in rows])
 
 @app.get("/api/admin/events")
