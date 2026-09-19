@@ -2,6 +2,7 @@ let entries=[],weights=[],rotation=0,spinning=false,lastWinner=null,selected=-1,
 let currentLanguage=localStorage.getItem('spinwheel.language')||'en';
 let stats=JSON.parse(localStorage.getItem('spinwheel.stats')||'{"spins":0,"seconds":0}');
 let entryPoints=JSON.parse(localStorage.getItem('spinwheel.entryPoints')||'[]');
+let dailyBets=JSON.parse(localStorage.getItem('spinwheel.dailyBets')||'{}');
 const WINNER_SHARE=80;
 const HOUSE_SHARE=20;
 let winnerShare=WINNER_SHARE;
@@ -15,11 +16,28 @@ function setLanguage(v){currentLanguage=v;localStorage.setItem('spinwheel.langua
 function rnd(){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]/4294967296}
 function norm(x){return String(x).trim().toLocaleLowerCase()}
 function normalize(a){a%=TAU;return a<0?a+TAU:a}
-function load(){entries=(localStorage.getItem('spinwheel.entries')||'1\n2\n3\n4\n5\n6\n7\n8\n9\n10').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);syncEntryPoints();sync();draw();updateStats();renderMainGallery('')}
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function ensureDailyBets(){if(!dailyBets||typeof dailyBets!=='object'||Array.isArray(dailyBets))dailyBets={};const today=todayKey();if(!Number.isFinite(Number(dailyBets[today])))dailyBets[today]=0;localStorage.setItem('spinwheel.dailyBets',JSON.stringify(dailyBets));}
+function getTodayBets(){ensureDailyBets();return Number(dailyBets[todayKey()]||0)}
+function changeTodayBets(delta){ensureDailyBets();const key=todayKey();dailyBets[key]=Math.max(0,Number(dailyBets[key]||0)+Number(delta||0));localStorage.setItem('spinwheel.dailyBets',JSON.stringify(dailyBets));renderDailyBets()}
+function recordBetToday(){changeTodayBets(1)}
+function renderDailyBets(){
+  ensureDailyBets();
+  const today=getTodayBets();
+  if($('fsTodayBets'))$('fsTodayBets').textContent=today.toLocaleString();
+  if($('todayBets'))$('todayBets').textContent=today.toLocaleString();
+  const history=$('fsBetHistory');
+  if(history){
+    const keys=Object.keys(dailyBets).sort().reverse().slice(0,7);
+    history.innerHTML=keys.length?keys.map(k=>`<div class="fsDayRow"><span>${k===todayKey()?'Today':k}</span><b>${Number(dailyBets[k]||0).toLocaleString()}</b></div>`).join(''):'<div class="fsDayEmpty">No daily bets yet.</div>';
+  }
+}
+function load(){ensureDailyBets();entries=(localStorage.getItem('spinwheel.entries')||'1\n2\n3\n4\n5\n6\n7\n8\n9\n10').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);syncEntryPoints();sync();draw();updateStats();renderDailyBets();renderMainGallery('')}
 function sync(){localStorage.setItem('spinwheel.entries',entries.join('\n'));$('entryInput').value=entries.join('\n');$('entryCount').textContent=entries.length;syncEntryPoints();renderPoints()}
 function syncEntryPoints(){const def=Math.max(0,Number($('pointsDefault')?.value||100));if(!Array.isArray(entryPoints))entryPoints=[];entryPoints=entries.map((_,i)=>Number.isFinite(Number(entryPoints[i]))?Math.max(0,Number(entryPoints[i])):def);localStorage.setItem('spinwheel.entryPoints',JSON.stringify(entryPoints));}
 function updatePointsUI(){winnerShare=WINNER_SHARE;localStorage.setItem('spinwheel.winnerShare',String(WINNER_SHARE));renderPoints()}
 function applyDefaultPoints(){const v=Math.max(0,Number($('pointsDefault')?.value||100));entryPoints=entries.map(()=>v);localStorage.setItem('spinwheel.entryPoints',JSON.stringify(entryPoints));renderPoints()}
+function applyFullscreenBetToAll(){const input=$('fsBetAll');const v=Math.max(0,Number(input?.value||0));entryPoints=entries.map(()=>v);localStorage.setItem('spinwheel.entryPoints',JSON.stringify(entryPoints));renderPoints();if(input)input.value=v}
 function renderPoints(){syncEntryPoints();const total=entryPoints.reduce((a,b)=>a+b,0);const pct=WINNER_SHARE;const list=$('pointsList');if(list)list.innerHTML=entries.map((x,i)=>`<div class="pointRow"><span><b>${i+1}.</b> ${escapeHtml(x)}</span><input type="number" min="0" step="1" value="${entryPoints[i]}" onchange="setEntryPoints(${i},this.value)"></div>`).join('');const fs=$('fsPointsList');if(fs)fs.innerHTML=entries.map((x,i)=>`<div class="fsPointRow ${i===selected?'active':''}"><span class="fsPointName">${i+1}. ${escapeHtml(x)}</span><label class="fsBetInput"><span>BET</span><input type="number" min="0" step="1" value="${entryPoints[i]}" aria-label="Bet for ${escapeHtml(x)}" onchange="setEntryPoints(${i},this.value)" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()"></label></div>`).join('');if($('poolTotal'))$('poolTotal').textContent=`${total.toLocaleString()} pts`;if($('fsPoolTotal'))$('fsPoolTotal').textContent=`${total.toLocaleString()} pts`;if($('fsWinnerShare'))$('fsWinnerShare').textContent=`${pct}%`;if($('winnerPayoutPct'))$('winnerPayoutPct').textContent=`${WINNER_SHARE}%`;if($('winnerPayout'))$('winnerPayout').textContent=`${winnerPointAmount().toLocaleString()} pts`;if($('housePayout'))$('housePayout').textContent=`${housePointAmount().toLocaleString()} pts`;if($('fsWinnerPayout'))$('fsWinnerPayout').textContent=`${winnerPointAmount().toLocaleString()} pts`;if($('winnerShare')){$('winnerShare').value=pct;$('winnerShare').readOnly=true}}
 function setEntryPoints(i,v){entryPoints[i]=Math.max(0,Number(v)||0);localStorage.setItem('spinwheel.entryPoints',JSON.stringify(entryPoints));renderPoints()}
 function winnerPointAmount(){if(selected<0)return 0;const total=entryPoints.reduce((a,b)=>a+b,0);return Math.round(total*WINNER_SHARE/100)}
@@ -74,8 +92,8 @@ async function spin(){
  }
  requestAnimationFrame(frame)
 }
-function finishSpin(idx,dur){selected=idx;lastWinner=entries[idx];stats.spins++;stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong><em>+'+winnerPointAmount().toLocaleString()+' pts</em>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner+' · +'+winnerPointAmount().toLocaleString()+' pts';$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti()}
-function updateStats(){const h=(stats.seconds/3600).toFixed(2),lw=lastWinner||results[0]?.name||'—';$('spinCount').textContent=stats.spins.toLocaleString();$('hoursCount').textContent=h;$('activitySpins').textContent=stats.spins.toLocaleString();$('activityHours').textContent=h;$('lastResult').textContent=lw;if($('fsSpinCount'))$('fsSpinCount').textContent=stats.spins.toLocaleString();if($('fsHoursCount'))$('fsHoursCount').textContent=h;if($('fsLastResult'))$('fsLastResult').textContent=lw}
+function finishSpin(idx,dur){selected=idx;lastWinner=entries[idx];stats.spins++;recordBetToday();stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong><em>+'+winnerPointAmount().toLocaleString()+' pts</em>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner+' · +'+winnerPointAmount().toLocaleString()+' pts';$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti()}
+function updateStats(){const h=(stats.seconds/3600).toFixed(2),lw=lastWinner||results[0]?.name||'—';$('spinCount').textContent=stats.spins.toLocaleString();$('hoursCount').textContent=h;$('activitySpins').textContent=stats.spins.toLocaleString();$('activityHours').textContent=h;$('lastResult').textContent=lw;if($('fsSpinCount'))$('fsSpinCount').textContent=stats.spins.toLocaleString();if($('fsHoursCount'))$('fsHoursCount').textContent=h;if($('fsLastResult'))$('fsLastResult').textContent=lw;renderDailyBets()}
 function ensureAudio(){if(spinAudio)return spinAudio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;spinAudio=new AC();return spinAudio}
 function startSpinRumble(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();if(spinNoise)return;
   // Low mechanical wheel rumble: filtered noise + a quiet rotating hum.
@@ -112,7 +130,7 @@ function announceWinner(name){if(!$('sound').checked||!name)return;const text=sp
 }else{browserAnnounce(text,'en')}}
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=()=>{ /* refreshes the available Amharic voice list */ }}
 function confetti(){for(let i=0;i<80;i++){const s=document.createElement('i');s.className='confetti';s.style.left=Math.random()*100+'vw';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}}
-function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');renderFullscreenEntries();renderPoints();requestAnimationFrame(()=>{resizeFullscreenCanvas();draw()});$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner} · +${winnerPointAmount().toLocaleString()} pts`:'Ready to spin';updateStats();try{el.requestFullscreen?.()}catch(e){}}
+function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');renderFullscreenEntries();renderPoints();renderDailyBets();requestAnimationFrame(()=>{resizeFullscreenCanvas();draw()});$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner} · +${winnerPointAmount().toLocaleString()} pts`:'Ready to spin';updateStats();try{el.requestFullscreen?.()}catch(e){}}
 function closeFullscreenGame(){const el=$('fullscreenGame');el.classList.add('hidden');if(document.fullscreenElement)document.exitFullscreen?.()}
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement && !$('fullscreenGame').classList.contains('hidden'))$('fullscreenGame').classList.add('hidden')});
 function showSideTab(w,b){document.querySelectorAll('.sideTabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('entryList').classList.toggle('hidden',w!=='list');$('resultsList').classList.toggle('hidden',w!=='results');$('statsPanel').classList.toggle('hidden',w!=='stats')}
