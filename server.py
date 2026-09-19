@@ -1,6 +1,8 @@
 import os, sqlite3, secrets, time
 from flask import Flask, send_from_directory, request, session, redirect, jsonify
 from flask_socketio import SocketIO, emit
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 app=Flask(__name__,static_folder="static",template_folder="templates")
 app.secret_key=os.environ.get("SPIN_SECRET","CHANGE_THIS_SECRET")
@@ -18,7 +20,12 @@ def init():
     c=db()
     c.execute("CREATE TABLE IF NOT EXISTS owner_events(id INTEGER PRIMARY KEY AUTOINCREMENT,target TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
     c.execute("CREATE TABLE IF NOT EXISTS wheels(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,entries TEXT,settings TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
-    c.execute("CREATE TABLE IF NOT EXISTS daily_plays(play_date TEXT PRIMARY KEY, total_plays INTEGER NOT NULL DEFAULT 0, last_play_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    c.execute("CREATE TABLE IF NOT EXISTS daily_plays(play_date TEXT PRIMARY KEY, total_plays INTEGER NOT NULL DEFAULT 0, total_bet REAL NOT NULL DEFAULT 0, total_win REAL NOT NULL DEFAULT 0, last_play_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    # Upgrade databases created by older versions.
+    cols={r[1] for r in c.execute("PRAGMA table_info(daily_plays)").fetchall()}
+    if "total_bet" not in cols: c.execute("ALTER TABLE daily_plays ADD COLUMN total_bet REAL NOT NULL DEFAULT 0")
+    if "total_win" not in cols: c.execute("ALTER TABLE daily_plays ADD COLUMN total_win REAL NOT NULL DEFAULT 0")
+    c.execute("CREATE TABLE IF NOT EXISTS play_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT, play_date TEXT NOT NULL, played_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, winner TEXT, total_bet REAL NOT NULL DEFAULT 0, total_win REAL NOT NULL DEFAULT 0)")
     c.commit(); c.close()
 init()
 
@@ -28,7 +35,10 @@ def home(): return send_from_directory("static","index.html")
 def login_page(): return send_from_directory("templates","admin-login.html")
 @app.get("/admin")
 def admin_page():
-    return send_from_directory("templates","admin.html") if session.get("admin") else redirect("/admin-login")
+    if not session.get("admin"): return redirect("/admin-login")
+    resp=send_from_directory("templates","admin.html")
+    resp.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0"
+    return resp
 @app.get("/owner-control")
 def control_page():
     # The page itself is safe to open without a token; control actions require
@@ -70,21 +80,35 @@ def new_link():
     return jsonify(control_url="/owner-control?token="+state["token"])
 @app.post("/api/play")
 def record_play():
-    # One successful wheel spin = one play. The server date is used so the
-    # daily register is consistent for the admin even when players use phones.
-    from datetime import datetime
-    day=datetime.utcnow().strftime("%Y-%m-%d")
+    # One completed wheel spin = one transaction. Store the total amount bet
+    # across all entries and the winner's payout in Birr for the admin ledger.
+    d=request.get_json(silent=True) or {}
+    now=datetime.now(ZoneInfo("Africa/Addis_Ababa"))
+    day=now.strftime("%Y-%m-%d")
+    played_at=now.strftime("%Y-%m-%d %H:%M:%S")
+    winner=str(d.get("winner","")).strip()
+    try: total_bet=max(0.0,float(d.get("total_bet",0) or 0))
+    except (TypeError,ValueError): total_bet=0.0
+    try: total_win=max(0.0,float(d.get("total_win",0) or 0))
+    except (TypeError,ValueError): total_win=0.0
     c=db()
-    c.execute("INSERT INTO daily_plays(play_date,total_plays,last_play_at) VALUES(?,1,CURRENT_TIMESTAMP) ON CONFLICT(play_date) DO UPDATE SET total_plays=total_plays+1,last_play_at=CURRENT_TIMESTAMP",(day,))
+    c.execute("INSERT INTO play_transactions(play_date,played_at,winner,total_bet,total_win) VALUES(?,?,?,?,?)",(day,played_at,winner,total_bet,total_win))
+    c.execute("INSERT INTO daily_plays(play_date,total_plays,total_bet,total_win,last_play_at) VALUES(?,1,?,?,?) ON CONFLICT(play_date) DO UPDATE SET total_plays=total_plays+1,total_bet=total_bet+excluded.total_bet,total_win=total_win+excluded.total_win,last_play_at=excluded.last_play_at",(day,total_bet,total_win,played_at))
     c.commit()
     row=c.execute("SELECT * FROM daily_plays WHERE play_date=?",(day,)).fetchone()
     c.close()
-    return jsonify(ok=True,date=row["play_date"],total_plays=row["total_plays"],last_play_at=row["last_play_at"])
+    return jsonify(ok=True,date=row["play_date"],total_plays=row["total_plays"],total_bet=row["total_bet"],total_win=row["total_win"],last_play_at=row["last_play_at"])
 
 @app.get("/api/admin/daily-plays")
 def daily_plays():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401
-    c=db(); rows=c.execute("SELECT play_date,total_plays,last_play_at FROM daily_plays ORDER BY play_date DESC LIMIT 365").fetchall(); c.close()
+    c=db(); rows=c.execute("SELECT play_date,total_plays,total_bet,total_win,last_play_at FROM daily_plays ORDER BY play_date DESC LIMIT 365").fetchall(); c.close()
+    return jsonify([dict(x) for x in rows])
+
+@app.get("/api/admin/play-transactions")
+def play_transactions():
+    if not session.get("admin"): return jsonify(error="Unauthorized"),401
+    c=db(); rows=c.execute("SELECT id,play_date,played_at,winner,total_bet,total_win FROM play_transactions ORDER BY id DESC LIMIT 500").fetchall(); c.close()
     return jsonify([dict(x) for x in rows])
 
 @app.get("/api/admin/events")

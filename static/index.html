@@ -90,7 +90,7 @@
   <div class="fullscreenStage">
     <div class="fsDecor" aria-hidden="true"><span>✦</span><span>◇</span><span>○</span><span>✧</span></div>
     <aside class="fsEntriesPanel">
-      <div class="fsEntriesTitle">🎟 Entries playing <span id="fsEntryCount"></span></div>
+      <div class="fsEntriesTitle"><span>🎟 Entries playing <b id="fsEntryCount"></b></span><span class="fsEntryControls"><button type="button" onclick="fsAddEntry(event)">＋</button><button type="button" onclick="fsAddEntry(event)">ADD</button></span></div>
       <div id="fsEntries"></div>
     </aside>
     <div class="fsWheelWrap"><div class="fsPointer"></div><div class="fsWheelOuter"><canvas id="fullscreenWheel" width="1200" height="1200"></canvas><div class="fsCenterSpin" onclick="spin()"><strong>↻</strong><span>CLICK TO SPIN</span><small>Ctrl + Enter</small></div></div></div>

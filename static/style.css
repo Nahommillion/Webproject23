@@ -266,3 +266,14 @@
 @media(max-width:900px){
   .fsSidePanel .fullscreenWinner{position:sticky!important;top:0!important;z-index:5!important;background:linear-gradient(145deg,#081c4df5,#122c64f5)!important;}
 }
+
+
+/* V25 fullscreen entry controls */
+.fsEntriesTitle{gap:8px}
+.fsEntriesTitle > span:first-child{display:flex;align-items:center;gap:5px}
+.fsEntryControls{display:flex!important;align-items:center;gap:4px}
+.fsEntryControls button{border:1px solid #58d9ff66;background:#0b3c78;color:#fff;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:900;cursor:pointer}
+.fsEntryControls button:hover{background:#1464a8}
+.fsEntry{position:relative}
+.fsEntryRemove{margin-left:auto;flex:0 0 auto;width:24px;height:24px;border:1px solid #ff6b7b66;background:#681d35aa;color:#fff;border-radius:6px;font-size:18px;line-height:18px;font-weight:900;cursor:pointer}
+.fsEntryRemove:hover{background:#a52a49}
