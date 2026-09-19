@@ -296,3 +296,22 @@
 .fsSpin{z-index:50!important;pointer-events:auto;}
 /* Keep the floating SPIN control away from the right-side Entry Points / Bets panel. */
 @media(min-width:901px){.fsSpin{right:12px!important;bottom:12px!important;transform:translateY(0);}.fsSidePanel{padding-bottom:78px!important;box-sizing:border-box;}}
+
+/* V28: keep the floating SPIN control inside the right fullscreen panel's free space.
+   It is now in normal document flow, so it can never cover Entry Points / Bets. */
+.fsSidePanel > .fsSpin{
+  position:relative!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  top:auto!important;
+  transform:none!important;
+  align-self:center;
+  flex:0 0 auto;
+  margin:4px auto 0;
+  z-index:20!important;
+}
+.fsSidePanel{overflow:auto!important;}
+@media(max-width:900px){
+  .fsSidePanel > .fsSpin{margin:6px auto 0;}
+}
