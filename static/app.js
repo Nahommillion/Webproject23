@@ -113,7 +113,7 @@ async function spin(){
  }
  requestAnimationFrame(frame)
 }
-function finishSpin(idx,dur){selected=idx;lastWinner=entries[idx];stats.spins++;stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));const totalBet=entryPoints.reduce((a,b)=>a+b,0); const totalWin=Math.round(totalBet*WINNER_SHARE/100); fetch('/api/play',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({winner:lastWinner,total_bet:totalBet,total_win:totalWin})}).then(()=>{}).catch(()=>{});$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong><em>+'+winnerPointAmount().toLocaleString()+' pts</em>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner+' · +'+winnerPointAmount().toLocaleString()+' pts';$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti()}
+function finishSpin(idx,dur){selected=idx;lastWinner=entries[idx];stats.spins++;stats.seconds+=dur/1000;localStorage.setItem('spinwheel.stats',JSON.stringify(stats));results.unshift({name:lastWinner,time:new Date().toLocaleString()});results=results.slice(0,100);localStorage.setItem('spinwheel.results',JSON.stringify(results));const totalBet=entryPoints.reduce((a,b)=>a+b,0); const totalWin=Math.round(totalBet*WINNER_SHARE/100); fetch('/api/play',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({winner:lastWinner,total_bet:totalBet,total_win:totalWin})}).then(()=>{}).catch(()=>{});$('winner').innerHTML='<small>🏆 WINNER</small><strong>'+escapeHtml(lastWinner)+'</strong><em>+'+winnerPointAmount().toLocaleString()+' pts</em>';$('fullscreenWinner').textContent='🏆 WINNER · '+lastWinner+' · +'+winnerPointAmount().toLocaleString()+' pts';$('lastResult').textContent=lastWinner;updateStats();render();spinning=false;privateTarget=null;fetch('/api/target/clear',{method:'POST'}).catch(()=>{});announceWinner(lastWinner);if(currentLanguage!=='am')setTimeout(sound,350);if($('confetti').checked)confetti();showWinnerCelebration(lastWinner,winnerPointAmount())}
 function updateStats(){const h=(stats.seconds/3600).toFixed(2),lw=lastWinner||results[0]?.name||'—';$('spinCount').textContent=stats.spins.toLocaleString();$('hoursCount').textContent=h;$('activitySpins').textContent=stats.spins.toLocaleString();$('activityHours').textContent=h;$('lastResult').textContent=lw;if($('fsSpinCount'))$('fsSpinCount').textContent=stats.spins.toLocaleString();if($('fsHoursCount'))$('fsHoursCount').textContent=h;if($('fsLastResult'))$('fsLastResult').textContent=lw}
 function ensureAudio(){if(spinAudio)return spinAudio;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;spinAudio=new AC();return spinAudio}
 function startSpinRumble(){if(!$('sound').checked)return;try{const a=ensureAudio();if(!a)return;a.resume?.();if(spinNoise)return;
@@ -151,6 +151,50 @@ function announceWinner(name){if(!$('sound').checked||!name)return;const text=sp
 }else{browserAnnounce(text,'en')}}
 if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=()=>{ /* refreshes the available Amharic voice list */ }}
 function confetti(){for(let i=0;i<80;i++){const s=document.createElement('i');s.className='confetti';s.style.left=Math.random()*100+'vw';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2000)}}
+function fsNewGame(){
+  if(spinning)return;
+  entries=['1','2','3','4','5','6','7','8','9','10']; weights=entries.map(()=>1); entryPoints=entries.map(()=>Math.max(0,Number($('fsAllBetAmount')?.value||$('pointsDefault')?.value||100)));
+  rotation=0; selected=-1; lastWinner=null; results=[]; localStorage.removeItem('spinwheel.results');
+  sync(); render(); draw(); updateStats(); closeFsPanels();
+}
+function closeFsPanels(){ $('fsCustomizePanel')?.classList.add('hidden'); $('fsGalleryPanel')?.classList.add('hidden'); }
+function toggleFsCustomize(){
+  const p=$('fsCustomizePanel'); if(!p)return;
+  $('fsGalleryPanel')?.classList.add('hidden');
+  if(p.classList.contains('hidden')){
+    if(!$('fsCustomizeMount').innerHTML.trim()){
+      $('fsCustomizeMount').innerHTML=`<div class="customize" style="display:block!important"><label>Theme colour</label><input id="fsThemeColor" type="color" value="${$('themeColor').value}"><label>Background colour</label><input id="fsBgColor" type="color" value="${$('bgColor').value}"><label>Background style</label><select id="fsBgStyle"><option value="solid">Solid</option><option value="gradient">Gradient</option><option value="pattern">Pattern</option><option value="dots">Dots</option></select><label class="check"><input id="fsGraphics" type="checkbox" ${$('graphics').checked?'checked':''}> Animated graphics</label><label class="check"><input id="fsSound" type="checkbox" ${$('sound').checked?'checked':''}> Sound</label><label class="check"><input id="fsConfetti" type="checkbox" ${$('confetti').checked?'checked':''}> Winner celebration</label><label>Spin time</label><div class="range"><input id="fsDuration" type="range" min="1" max="60" value="${$('duration').value}"><b><span id="fsDurationLabel">${$('duration').value}</span>s</b></div><button class="apply" type="button" onclick="applyFsTheme()">Apply</button></div>`;
+      $('fsBgStyle').value=$('bgStyle').value;
+      $('fsDuration').oninput=()=>$('fsDurationLabel').textContent=$('fsDuration').value;
+    }
+    p.classList.remove('hidden');
+  }else p.classList.add('hidden');
+}
+function applyFsTheme(){
+  const vals={themeColor:$('fsThemeColor').value,bgColor:$('fsBgColor').value,bgStyle:$('fsBgStyle').value,graphics:$('fsGraphics').checked,sound:$('fsSound').checked,confetti:$('fsConfetti').checked,duration:$('fsDuration').value};
+  $('themeColor').value=vals.themeColor;$('bgColor').value=vals.bgColor;$('bgStyle').value=vals.bgStyle;$('graphics').checked=vals.graphics;$('sound').checked=vals.sound;$('confetti').checked=vals.confetti;$('duration').value=vals.duration;$('durationLabel').textContent=vals.duration;applyTheme();
+  $('fsDurationLabel').textContent=vals.duration;closeFsPanels();
+}
+function toggleFsGallery(){
+  const p=$('fsGalleryPanel'); if(!p)return;
+  $('fsCustomizePanel')?.classList.add('hidden');
+  if(p.classList.contains('hidden')){p.classList.remove('hidden');renderFsGallery($('fsGallerySearch')?.value||'');}
+  else p.classList.add('hidden');
+}
+function renderFsGallery(q=''){
+  const ql=String(q).toLowerCase(); const list=cats.concat(['Lucky Draw','Classroom Picker','Giveaway','Team Picker','Tasks','Food','Clash Challenge','Defense Picker','Praktikum Randomizer','Speed Challenge','Fuggler Fun']);
+  const uniq=[...new Set(list)].filter(x=>x.toLowerCase().includes(ql));
+  $('fsGalleryCards').innerHTML=uniq.map(x=>`<div class="miniCard" onclick="loadGalleryWheelFromFullscreen('${String(x).replace(/'/g,"\\'")}')"><b>${escapeHtml(x)}</b><small>Open wheel</small></div>`).join('')||'<small>No gallery results.</small>';
+}
+function loadGalleryWheelFromFullscreen(name){loadGalleryWheel(name);closeFsPanels();}
+function showWinnerCelebration(name,amount){
+  const el=$('winnerCelebration'); if(!el)return;
+  $('celebrationWinner').textContent=name;$('celebrationPrize').textContent='+'+Number(amount||0).toLocaleString()+' pts';
+  el.querySelectorAll('.celebrateParticle,.celebrateStar').forEach(x=>x.remove());
+  for(let i=0;i<90;i++){const s=document.createElement('i');s.className='celebrateParticle';s.style.setProperty('--h',Math.floor(Math.random()*360));s.style.setProperty('--x',(Math.random()*110-55)+'vw');s.style.setProperty('--y',(Math.random()*100-50)+'vh');s.style.setProperty('--r',(Math.random()*900-450)+'deg');s.style.setProperty('--d',(Math.random()*.45)+'s');el.appendChild(s)}
+  for(let i=0;i<24;i++){const s=document.createElement('i');s.className='celebrateStar';s.textContent=['✦','✧','★','◆'][i%4];s.style.setProperty('--x',(Math.random()*100-50)+'vw');s.style.setProperty('--y',(Math.random()*90-45)+'vh');s.style.setProperty('--d',(Math.random()*.35)+'s');el.appendChild(s)}
+  el.classList.remove('hidden');clearTimeout(window._celebrateTimer);window._celebrateTimer=setTimeout(()=>el.classList.add('hidden'),2600);
+}
 function openFullscreenGame(){const el=$('fullscreenGame');el.classList.remove('hidden');renderFullscreenEntries();renderPoints();requestAnimationFrame(()=>{resizeFullscreenCanvas();draw()});$('fullscreenWinner').textContent=lastWinner?`🏆 ${lastWinner} · +${winnerPointAmount().toLocaleString()} pts`:'Ready to spin';updateStats();try{el.requestFullscreen?.()}catch(e){}}
 function closeFullscreenGame(){const el=$('fullscreenGame');el.classList.add('hidden');if(document.fullscreenElement)document.exitFullscreen?.()}
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement && !$('fullscreenGame').classList.contains('hidden'))$('fullscreenGame').classList.add('hidden')});
@@ -172,7 +216,7 @@ function importGoogleSheets(){openModal('Import Google Sheets','<p>Paste a publi
 const cats=['Picker','Class','Clash','Defense','Praktikum','Speed','Fuggler','Generator','Seson','Family'];
 function renderMainGallery(q=''){const ql=q.toLowerCase();$('mainCats').innerHTML=cats.map(c=>`<button onclick="renderMainGallery('${c}')">${c}</button>`).join('');const names=['Lucky Draw','Classroom Picker','Giveaway','Team Picker','Tasks','Food','Clash Challenge','Defense Picker','Praktikum Randomizer','Speed Challenge','Fuggler Fun'];const a=names.filter(x=>x.toLowerCase().includes(ql));$('mainGallery').innerHTML=a.slice(0,6).map(x=>`<div class="miniCard" onclick="loadGalleryWheel('${x}')"><b>${x}</b><small>Open sample wheel</small></div>`).join('')||'<small>No gallery results.</small>'}
 function openGallery(){openModal('Gallery','<input id="gallerySearchModal" class="galleryInput" placeholder="Search gallery…"><div id="galleryModalCards" class="miniGallery" style="margin-top:10px"></div><p>You can add your own wheels to this gallery by clicking “Share” on the main page.</p>');const f=()=>{$('galleryModalCards').innerHTML=cats.concat(['Lucky Draw','Classroom Picker','Giveaway']).filter(x=>x.toLowerCase().includes($('gallerySearchModal').value.toLowerCase())).map(x=>`<div class="miniCard" onclick="loadGalleryWheel('${x}')"><b>${x}</b></div>`).join('')};f();$('gallerySearchModal').oninput=f}
-function loadGalleryWheel(name){entries=name.toLowerCase().includes('class')?['Student 1','Student 2','Student 3','Student 4','Student 5']:name.toLowerCase().includes('family')?['Mom','Dad','Brother','Sister','Cousin']:['1','2','3','4','5','6','7','8','9','10'];weights=entries.map(()=>1);rotation=0;render();draw();closeModal()}
+function loadGalleryWheel(name){entries=name.toLowerCase().includes('class')?['Student 1','Student 2','Student 3','Student 4','Student 5']:name.toLowerCase().includes('family')?['Mom','Dad','Brother','Sister','Cousin']:['1','2','3','4','5','6','7','8','9','10'];weights=entries.map(()=>1);rotation=0;selected=-1;entryPoints=entries.map(()=>Math.max(0,Number($('fsAllBetAmount')?.value||$('pointsDefault')?.value||100)));sync();render();draw();closeModal()}
 function showInfo(type){const m={how:['How to use','Add entries, click the wheel or press Ctrl + Enter, then use Customize for appearance and spin time.'],features:['Wheel features','Spin duration, sound, animated graphics, results, sharing, gallery, localization and private owner control are supported.'],privacy:['Privacy','Keep sensitive information off public wheels. Local settings remain local until you choose cloud or sharing.'],streaming:['OBS / Streaming','Use the public wheel as a browser source and keep the private owner-control URL private.'],random:['Randomness','Normal spins use crypto.getRandomValues(). Owner targeting is an intentional override for the next result.'],terms:['Terms & conditions','Use SpinWheel responsibly. Public wheels should comply with applicable law and site rules.'],faq:['FAQ','Click the wheel or press Ctrl + Enter to spin. Use Results to review previous winners.'],api:['API','Developer API features can be expanded as the platform grows.'],feedback:['Feedback','Send feedback to the SpinWheel owner about improvements you want.'],cloudHelp:['Open from cloud','Save a shared wheel first. The cloud ID is stored in this browser.'],helpChoose:['Help me choose','Start with names or numbers, use Shuffle or Sort, then spin.']}[type]||['SpinWheel',''];openModal(m[0],'<p>'+m[1]+'</p>')}
 function showAccount(){openModal('My Account','<p>Sign in to keep your private wheels and preferences together.</p><input class="galleryInput" placeholder="Email"><input class="galleryInput" type="password" placeholder="Password">',[['Cancel','secondary',closeModal],['Sign in','primary',()=>{closeModal();alert('Signed in on this device.')}]] )}
 function showPreferences(){openModal('Preferences','<p>Use Customize for theme, background graphics, sound and spin duration. Preferences are stored on this device.</p>')}
