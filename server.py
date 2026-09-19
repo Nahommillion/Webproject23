@@ -18,6 +18,7 @@ def init():
     c=db()
     c.execute("CREATE TABLE IF NOT EXISTS owner_events(id INTEGER PRIMARY KEY AUTOINCREMENT,target TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
     c.execute("CREATE TABLE IF NOT EXISTS wheels(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,entries TEXT,settings TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+    c.execute("CREATE TABLE IF NOT EXISTS daily_plays(play_date TEXT PRIMARY KEY, total_plays INTEGER NOT NULL DEFAULT 0, last_play_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
     c.commit(); c.close()
 init()
 
@@ -67,6 +68,25 @@ def new_link():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401
     state["token"]=secrets.token_urlsafe(32)
     return jsonify(control_url="/owner-control?token="+state["token"])
+@app.post("/api/play")
+def record_play():
+    # One successful wheel spin = one play. The server date is used so the
+    # daily register is consistent for the admin even when players use phones.
+    from datetime import datetime
+    day=datetime.utcnow().strftime("%Y-%m-%d")
+    c=db()
+    c.execute("INSERT INTO daily_plays(play_date,total_plays,last_play_at) VALUES(?,1,CURRENT_TIMESTAMP) ON CONFLICT(play_date) DO UPDATE SET total_plays=total_plays+1,last_play_at=CURRENT_TIMESTAMP",(day,))
+    c.commit()
+    row=c.execute("SELECT * FROM daily_plays WHERE play_date=?",(day,)).fetchone()
+    c.close()
+    return jsonify(ok=True,date=row["play_date"],total_plays=row["total_plays"],last_play_at=row["last_play_at"])
+
+@app.get("/api/admin/daily-plays")
+def daily_plays():
+    if not session.get("admin"): return jsonify(error="Unauthorized"),401
+    c=db(); rows=c.execute("SELECT play_date,total_plays,last_play_at FROM daily_plays ORDER BY play_date DESC LIMIT 365").fetchall(); c.close()
+    return jsonify([dict(x) for x in rows])
+
 @app.get("/api/admin/events")
 def events():
     if not session.get("admin"): return jsonify(error="Unauthorized"),401

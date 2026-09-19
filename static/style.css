@@ -229,7 +229,8 @@
   .dashboard>.rightPanel .pointsPanel{max-height:38vh!important;overflow:auto!important;}
   .openSaveBar{grid-template-columns:1fr 1fr 2fr!important;}
 }
-.payoutSummary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.payoutSummary>div{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid #ffffff16;border-radius:8px;background:#061d43aa;font-size:10px}.payoutSummary b{color:#55ddff}.fsPointsMeta{line-height:1.6}
+.payoutSummary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.payoutSummary>div{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid #ffffff16;border-radius:8px;background:#061d43aa;font-size:10px}.payoutSummary b{color:#55ddff}.fsAllBet{display:flex;gap:6px;align-items:end;margin:7px 0;padding:7px;border:1px solid #58d9ff33;border-radius:9px;background:#061d43aa}.fsAllBet label{flex:1;color:#9db9dd;font-size:9px;font-weight:800}.fsAllBet input{width:100%;box-sizing:border-box;margin-top:4px;background:#031633;color:#fff;border:1px solid #58d9ff55;border-radius:7px;padding:6px;font-size:12px;font-weight:800}.fsAllBet button{border:0;border-radius:7px;padding:7px 9px;background:var(--theme,#7c5cff);color:#fff;font-size:9px;font-weight:900;cursor:pointer}.fsAllBet button:active{transform:scale(.97)}
+.fsPointsMeta{line-height:1.6}
 
 /* V17: restore the live winner/stat cards beside the normal wheel. Fullscreen is intentionally untouched. */
 @media(min-width:901px){
