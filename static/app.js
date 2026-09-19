@@ -32,44 +32,44 @@ function renderResults(){$('resultsList').innerHTML=results.length?results.map((
 function renderStatsPanel(){$('statsPanel').innerHTML=`<div class="statBox"><b>${stats.spins.toLocaleString()}</b>Wheel spins</div><div class="statBox"><b>${(stats.seconds/3600).toFixed(2)}</b>Hours of spinning</div><div class="statBox"><b>${escapeHtml(lastWinner||'—')}</b>Last winner</div>`}
 function renderFullscreenEntries(){const box=$('fsEntries');if(!box)return;const count=$('fsEntryCount');if(count)count.textContent=`(${entries.length})`;box.innerHTML=entries.map((x,i)=>`<div class="fsEntry ${i===selected?'active':''}"><span class="num">${i+1}</span><span class="entryName">${escapeHtml(x)}</span><button type="button" class="fsEntryRemove" title="Remove entry" onclick="fsRemoveEntry(event,${i})">−</button></div>`).join('')}
 $('entryInput').addEventListener('input',()=>{entries=$('entryInput').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);weights=entries.map(()=>1);selected=-1;sync();draw();render()});
+$('fsInlineEntryName')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirmFsAddEntry(e)}else if(e.key==='Escape'){e.preventDefault();cancelFsAddEntry(e)}});
+
 function addEntry(){const x=prompt('Enter a number or name');if(x?.trim()){entries.push(x.trim());weights.push(1);entryPoints.push(Math.max(0,Number($('pointsDefault')?.value||100)));render();draw()}}
 function fsAddEntry(e){
-  e?.preventDefault();e?.stopPropagation();
+  e?.preventDefault(); e?.stopPropagation();
   if(spinning)return;
-  openModal('Add entry',
-    '<p>Enter the new entry without leaving Full Screen.</p><input id="fsNewEntryName" class="galleryInput" autocomplete="off" placeholder="Entry name or number">',
-    [
-      ['Cancel','secondary',()=>closeModal()],
-      ['Add','primary',()=>{
-        const input=$('fsNewEntryName'); const x=input?.value?.trim();
-        if(!x){input?.focus();return;}
-        entries.push(x); weights.push(1);
-        entryPoints.push(Math.max(0,Number($('fsAllBetAmount')?.value||$('pointsDefault')?.value||100)));
-        selected=-1; sync(); render(); draw(); renderFullscreenEntries(); closeModal();
-        requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
-      }]
-    ]
-  );
-  requestAnimationFrame(()=>$('fsNewEntryName')?.focus());
+  const panel=$('fsInlineAdd');
+  const input=$('fsInlineEntryName');
+  if(!panel||!input)return;
+  panel.classList.remove('hidden');
+  input.value='';
+  requestAnimationFrame(()=>input.focus());
+}
+function confirmFsAddEntry(e){
+  e?.preventDefault(); e?.stopPropagation();
+  if(spinning)return;
+  const input=$('fsInlineEntryName');
+  const x=input?.value?.trim();
+  if(!x){input?.focus();return;}
+  entries.push(x); weights.push(1);
+  const allBet=Math.max(0,Number($('fsAllBetAmount')?.value||0));
+  entryPoints.push(allBet);
+  selected=-1; sync(); render(); draw();
+  cancelFsAddEntry(e);
+  requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
+}
+function cancelFsAddEntry(e){
+  e?.preventDefault(); e?.stopPropagation();
+  $('fsInlineAdd')?.classList.add('hidden');
 }
 function fsRemoveEntry(e,i){
-  e?.preventDefault();e?.stopPropagation();
+  e?.preventDefault(); e?.stopPropagation();
   if(spinning)return;
   if(i<0||i>=entries.length)return;
-  const name=entries[i];
-  openModal('Remove entry',
-    '<p>Remove <b>'+escapeHtml(name)+'</b> from this wheel?</p>',
-    [
-      ['Cancel','secondary',()=>closeModal()],
-      ['Remove','primary',()=>{
-        if(i<0||i>=entries.length){closeModal();return;}
-        entries.splice(i,1); weights.splice(i,1); entryPoints.splice(i,1);
-        if(selected===i)selected=-1;else if(selected>i)selected--;
-        sync(); render(); draw(); renderFullscreenEntries(); closeModal();
-        requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
-      }]
-    ]
-  );
+  entries.splice(i,1); weights.splice(i,1); entryPoints.splice(i,1);
+  if(selected===i)selected=-1; else if(selected>i)selected--;
+  sync(); render(); draw();
+  requestAnimationFrame(()=>{resizeFullscreenCanvas();draw();});
 }
 function renameSelected(){if(selected<0)return;const x=prompt('New name',entries[selected]);if(x?.trim()){entries[selected]=x.trim();render();draw()}}
 function shuffleEntries(){for(let i=entries.length-1;i>0;i--){let j=Math.floor(rnd()*(i+1));[entries[i],entries[j]]=[entries[j],entries[i]]}selected=-1;render();draw()}

@@ -282,3 +282,17 @@
 #modal { z-index: 100000; }
 #fullscreenGame { z-index: 90000; }
 #fullscreenGame .fsEntryRemove { position: relative; z-index: 2; }
+
+
+/* V27: all fullscreen entry editing stays inside the fullscreen element. */
+.fsInlineAdd{display:grid;grid-template-columns:1fr auto auto;gap:6px;margin:0 0 8px;padding:7px;border:1px solid #58d9ff55;border-radius:9px;background:#061d43ee;position:relative;z-index:20;}
+.fsInlineAdd.hidden{display:none!important}
+.fsInlineAdd input{min-width:0;width:100%;box-sizing:border-box;background:#031633;color:#fff;border:1px solid #58d9ff66;border-radius:7px;padding:7px 8px;font-size:11px;outline:none;}
+.fsInlineAdd button{border:1px solid #58d9ff66;background:#0b3c78;color:#fff;border-radius:7px;padding:6px 9px;font-size:10px;font-weight:900;cursor:pointer;}
+.fsInlineAdd button.secondary{background:#4a1930;border-color:#ff6b7b55;}
+.fsInlineAdd input:focus{border-color:#55ddff;box-shadow:0 0 0 2px #55ddff22;}
+.fsEntriesPanel{position:relative;z-index:30;min-width:0;min-height:0;}
+.fsEntriesPanel #fsEntries{min-height:0;overflow:auto;}
+.fsSpin{z-index:50!important;pointer-events:auto;}
+/* Keep the floating SPIN control away from the right-side Entry Points / Bets panel. */
+@media(min-width:901px){.fsSpin{right:12px!important;bottom:12px!important;transform:translateY(0);}.fsSidePanel{padding-bottom:78px!important;box-sizing:border-box;}}
